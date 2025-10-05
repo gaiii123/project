@@ -8,6 +8,7 @@ require('dotenv').config();
 const { initDatabase } = require('./config/database');
 
 // Import routes
+const userRoutes = require('./routes/users');
 const beneficiaryRoutes = require('./routes/beneficiaries');
 const donationRoutes = require('./routes/donations');
 const projectRoutes = require('./routes/projects');
@@ -38,6 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 initDatabase();
 
 // Routes
+app.use('/api/users', userRoutes);
 app.use('/api/beneficiaries', beneficiaryRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/projects', projectRoutes);
@@ -60,6 +62,7 @@ app.get('/', (req, res) => {
     message: 'Welcome to ImpactTrace API',
     version: '1.0.0',
     endpoints: {
+      users: '/api/users',
       beneficiaries: '/api/beneficiaries',
       donations: '/api/donations',
       projects: '/api/projects',

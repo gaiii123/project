@@ -133,10 +133,75 @@ const getProjectProgress = (req, res) => {
   });
 };
 
+// Update project
+const updateProject = (req, res) => {
+  const { id } = req.params;
+  const { name, description, target_amount } = req.body;
+
+  if (!name || !description || !target_amount) {
+    return res.status(400).json({
+      success: false,
+      message: 'Name, description, and target amount are required'
+    });
+  }
+
+  if (target_amount <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Target amount must be greater than 0'
+    });
+  }
+
+  const projectData = {
+    name,
+    description,
+    target_amount: parseFloat(target_amount)
+  };
+
+  Project.update(id, projectData, (err) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error updating project',
+        error: err.message
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Project updated successfully',
+      data: { id, ...projectData }
+    });
+  });
+};
+
+// Delete project
+const deleteProject = (req, res) => {
+  const { id } = req.params;
+  console.log('Deleting project with ID:', id);
+
+  Project.delete(id, (err) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error deleting project',
+        error: err.message
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Project deleted successfully'
+    });
+  });
+};
+
 module.exports = {
   getAllProjects,
   getProjectById,
   createProject,
   updateProjectProgress,
-  getProjectProgress
+  getProjectProgress,
+  updateProject,
+  deleteProject
 };

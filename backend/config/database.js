@@ -25,6 +25,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
 // Initialize database tables
 const initDatabase = () => {
   const initSQL = `
+    -- Users table (for authentication)
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      phone TEXT,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL CHECK(role IN ('admin', 'donor', 'beneficiary', 'ngo_admin')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Beneficiaries table
     CREATE TABLE IF NOT EXISTS beneficiaries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,16 +89,6 @@ const initDatabase = () => {
       FOREIGN KEY (beneficiary_id) REFERENCES beneficiaries (id) ON DELETE SET NULL,
       FOREIGN KEY (donation_id) REFERENCES donations (id) ON DELETE SET NULL
     );
-
-    -- Insert sample data
-    INSERT OR IGNORE INTO projects (name, description, target_amount) VALUES 
-    ('Education for Children', 'Provide school supplies and tuition for underprivileged children', 50000.00),
-    ('Healthcare Initiative', 'Medical camps and healthcare services for rural areas', 75000.00),
-    ('Food Distribution', 'Weekly food distribution to families in need', 25000.00);
-
-    INSERT OR IGNORE INTO beneficiaries (name, email, phone, address, needs_description) VALUES 
-    ('John Smith', 'john@example.com', '+1234567890', '123 Main St, City', 'Need educational support for two children'),
-    ('Maria Garcia', 'maria@example.com', '+0987654321', '456 Oak Ave, Town', 'Medical assistance for chronic condition');
   `;
 
   db.exec(initSQL, (err) => {
