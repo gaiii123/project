@@ -63,6 +63,29 @@ export interface ImpactSummary {
   total_impact_records: number;
 }
 
+export interface BeneficiaryDashboardData {
+  totalDonations: number;
+  categories: {
+    name: string;
+    count: number;
+    amount: number;
+    color: string;
+  }[];
+  recentActivities: {
+    id: number;
+    type: 'approved' | 'review' | 'submitted' | 'rejected';
+    title: string;
+    subtitle: string;
+    timestamp: string;
+  }[];
+  applicationStats: {
+    pending: number;
+    approved: number;
+    rejected: number;
+    total: number;
+  };
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;

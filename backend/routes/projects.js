@@ -7,7 +7,9 @@ const {
   getProjectById,
   createProject,
   updateProjectProgress,
-  getProjectProgress
+  getProjectProgress,
+  updateProject,
+  deleteProject
 } = require('../controllers/projectController');
 
 // GET /api/projects - Get all projects
@@ -22,7 +24,13 @@ router.get('/:id', getProjectById);
 // POST /api/projects - Create new project
 router.post('/', createProject);
 
+// PUT /api/projects/:id - Update project
+router.put('/:id', updateProject);
+
 // PUT /api/projects/:id/progress - Update project progress
 router.put('/:id/progress', updateProjectProgress);
+
+// DELETE /api/projects/:id - Delete project
+router.delete('/:id', deleteProject);
 
 module.exports = router;

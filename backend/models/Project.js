@@ -37,6 +37,21 @@ class Project {
     db.run(sql, [status, id], callback);
   }
 
+  // Update project details
+  static update(id, projectData, callback) {
+    const { name, description, target_amount } = projectData;
+    const sql = `UPDATE projects 
+                 SET name = ?, description = ?, target_amount = ?, updated_at = CURRENT_TIMESTAMP 
+                 WHERE id = ?`;
+    db.run(sql, [name, description, target_amount, id], callback);
+  }
+
+  // Delete project
+  static delete(id, callback) {
+    const sql = 'DELETE FROM projects WHERE id = ?';
+    db.run(sql, [id], callback);
+  }
+
   // Get project progress
   static getProgress(callback) {
     const sql = `
