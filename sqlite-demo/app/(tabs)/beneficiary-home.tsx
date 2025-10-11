@@ -1,619 +1,459 @@
-// app/(tabs)/beneficiary-home.tsx
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import { useState, useEffect } from 'react';
+import React from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { PieChart } from 'react-native-chart-kit';
-import LoadingSpinner from '../../components/loadingSpinner';
-import ErrorMessage from '../../components/errorMessage';
-import Sidebar from '../../components/SideBar';
-import { getCurrentUser, UserData } from '../../Utils/auth';
-import { router } from 'expo-router';
-
-const screenWidth = Dimensions.get('window').width;
-
-// Application category data type
-interface ApplicationCategory {
-  name: string;
-  count: number;
-  amount: number;
-  color: string;
-}
-
-// Quick action type
-interface QuickAction {
-  id: string;
-  title: string;
-  icon: any;
-  color: string;
-  route: string;
-}
 
 export default function BeneficiaryHomeScreen() {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sidebarVisible, setSidebarVisible] = useState(false);
-  const [totalDonationsReceived, setTotalDonationsReceived] = useState(0);
-  const [applicationCategories, setApplicationCategories] = useState<ApplicationCategory[]>([]);
+  const router = useRouter();
 
-  // Quick actions for beneficiaries
-  const quickActions: QuickAction[] = [
+  const applicationStatus = {
+    status: 'approved',
+    title: 'Education Support Application',
+    date: '2024-01-15',
+    amount: '$1,200',
+    nextSteps: 'Funds will be disbursed within 3-5 business days',
+  };
+
+  const quickActions = [
     {
-      id: '1',
-      title: 'Request Donation',
-      icon: 'add-circle',
-      color: '#4caf50',
-      route: '/beneficiary',
+      title: 'Apply for Aid',
+      icon: 'document-text',
+      color: '#A855F7',
+      route: '/beneficiary/apply',
     },
     {
-      id: '2',
-      title: 'Track Requests',
-      icon: 'location',
-      color: '#2196f3',
-      route: '/beneficiary',
+      title: 'My Applications',
+      icon: 'list',
+      color: '#10B981',
+      route: '/beneficiary/applications',
     },
     {
-      id: '3',
-      title: 'Donation History',
-      icon: 'time',
-      color: '#ff9800',
-      route: '/reports',
+      title: 'Resources',
+      icon: 'book',
+      color: '#F59E0B',
+      route: '/beneficiary/resources',
     },
     {
-      id: '4',
-      title: 'My Profile',
-      icon: 'person',
-      color: '#9c27b0',
-      route: '/home',
+      title: 'Support',
+      icon: 'help-buoy',
+      color: '#EF4444',
+      route: '/beneficiary/support',
     },
   ];
 
-  const loadBeneficiaryData = async () => {
-    // TODO: Replace with actual API call to get beneficiary-specific data
-    // const response = await apiService.getBeneficiaryDashboard(userData?.email);
-    
-    // Sample data - replace with actual API data
-    setTotalDonationsReceived(15750);
-    
-    setApplicationCategories([
-      { name: 'Food', count: 5, amount: 6500, color: '#4caf50' },
-      { name: 'Medicine', count: 3, amount: 4200, color: '#2196f3' },
-      { name: 'Education', count: 4, amount: 3050, color: '#ff9800' },
-      { name: 'Emergency', count: 2, amount: 2000, color: '#f44336' },
-    ]);
-  };
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const user = await getCurrentUser();
-      setUserData(user);
-
-      // In production, fetch actual data from API
-      // For now, using sample data
-      await loadBeneficiaryData();
-      
-    } catch (err: any) {
-      setError(err.message || 'Failed to load dashboard data');
-      console.error('Error loading dashboard:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadDashboardData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleQuickAction = (action: QuickAction) => {
-    if (action.route) {
-      router.push(action.route as any);
-    }
-  };
-
-  // Prepare data for pie chart
-  const pieChartData = applicationCategories.map(category => ({
-    name: category.name,
-    amount: category.amount,
-    color: category.color,
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 12,
-  }));
-
-  if (loading) {
-    return <LoadingSpinner text="Loading your dashboard..." />;
-  }
-
-  if (error) {
-    return (
-      <ErrorMessage 
-        message={error} 
-        onRetry={loadDashboardData}
-      />
-    );
-  }
+  const availablePrograms = [
+    {
+      id: 1,
+      title: 'Educational Assistance',
+      description: 'Support for school fees, books, and supplies',
+      icon: 'school',
+      category: 'Education',
+    },
+    {
+      id: 2,
+      title: 'Medical Aid Program',
+      description: 'Financial assistance for medical treatments',
+      icon: 'medical',
+      category: 'Healthcare',
+    },
+    {
+      id: 3,
+      title: 'Food Security',
+      description: 'Monthly food packages and nutrition support',
+      icon: 'nutrition',
+      category: 'Food Aid',
+    },
+  ];
 
   return (
-    <>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.menuButton}
-            onPress={() => setSidebarVisible(true)}
-          >
-            <Ionicons name="menu" size={28} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Welcome Back!</Text>
-            <Text style={styles.headerSubtitle}>{userData?.name || 'Beneficiary'}</Text>
+    <ScrollView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Ionicons name="person" size={40} color="#A855F7" />
+          <Text style={styles.title}>Beneficiary Portal</Text>
+          <Text style={styles.subtitle}>
+            Get the support you need to thrive
+          </Text>
+        </View>
+      </View>
+
+      {/* Application Status */}
+      <View style={styles.statusSection}>
+        <Text style={styles.sectionTitle}>Application Status</Text>
+        <View style={[
+          styles.statusCard,
+          applicationStatus.status === 'approved' && styles.statusApproved,
+          applicationStatus.status === 'pending' && styles.statusPending,
+          applicationStatus.status === 'rejected' && styles.statusRejected,
+        ]}>
+          <View style={styles.statusHeader}>
+            <Ionicons 
+              name={
+                applicationStatus.status === 'approved' ? 'checkmark-circle' :
+                applicationStatus.status === 'pending' ? 'time' : 'close-circle'
+              } 
+              size={24} 
+              color={
+                applicationStatus.status === 'approved' ? '#10B981' :
+                applicationStatus.status === 'pending' ? '#F59E0B' : '#EF4444'
+              } 
+            />
+            <Text style={styles.statusTitle}>
+              {applicationStatus.status.charAt(0).toUpperCase() + applicationStatus.status.slice(1)}
+            </Text>
           </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Ionicons name="notifications" size={24} color="#fff" />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>3</Text>
-            </View>
+          <Text style={styles.applicationTitle}>{applicationStatus.title}</Text>
+          <View style={styles.applicationDetails}>
+            <Text style={styles.detailText}>Applied: {applicationStatus.date}</Text>
+            <Text style={styles.detailText}>Amount: {applicationStatus.amount}</Text>
+          </View>
+          <Text style={styles.nextSteps}>{applicationStatus.nextSteps}</Text>
+        </View>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.actionsSection}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.actionsGrid}>
+          {quickActions.map((action, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.actionCard}
+              onPress={() => router.push(action.route as any)}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
+                <Ionicons name={action.icon as any} size={24} color="#FFFFFF" />
+              </View>
+              <Text style={styles.actionTitle}>{action.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Available Programs */}
+      <View style={styles.programsSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Available Programs</Text>
+          <TouchableOpacity onPress={() => router.push('/beneficiary/programs' as any)}>
+            <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView 
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Total Donations Card */}
-          <View style={styles.totalCard}>
-            <View style={styles.totalCardHeader}>
-              <Ionicons name="wallet" size={32} color="#4caf50" />
-              <View style={styles.totalCardContent}>
-                <Text style={styles.totalCardLabel}>Total Donations Received</Text>
-                <Text style={styles.totalCardAmount}>
-                  ${totalDonationsReceived.toLocaleString()}
-                </Text>
+        {availablePrograms.map((program) => (
+          <TouchableOpacity
+            key={program.id}
+            style={styles.programCard}
+            onPress={() => router.push(`/beneficiary/apply?program=${program.id}` as any)}
+          >
+            <View style={styles.programIcon}>
+              <Ionicons name={program.icon as any} size={24} color="#A855F7" />
+            </View>
+            <View style={styles.programContent}>
+              <Text style={styles.programTitle}>{program.title}</Text>
+              <Text style={styles.programDescription}>{program.description}</Text>
+              <View style={styles.programCategory}>
+                <Text style={styles.categoryText}>{program.category}</Text>
               </View>
             </View>
-            <Text style={styles.totalCardSubtext}>
-              Your total support across all applications
-            </Text>
-          </View>
-
-          {/* Application Categories Pie Chart */}
-          <View style={styles.chartCard}>
-            <Text style={styles.sectionTitle}>Application Categories</Text>
-            <Text style={styles.sectionSubtitle}>
-              Breakdown of your applications by category
-            </Text>
-            
-            {pieChartData.length > 0 ? (
-              <View style={styles.chartContainer}>
-                <PieChart
-                  data={pieChartData}
-                  width={screenWidth - 60}
-                  height={220}
-                  chartConfig={{
-                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  }}
-                  accessor="amount"
-                  backgroundColor="transparent"
-                  paddingLeft="15"
-                  absolute
-                />
-                
-                {/* Category Summary */}
-                <View style={styles.categorySummary}>
-                  {applicationCategories.map((category, index) => (
-                    <View key={index} style={styles.categoryItem}>
-                      <View style={styles.categoryInfo}>
-                        <View 
-                          style={[
-                            styles.categoryDot, 
-                            { backgroundColor: category.color }
-                          ]} 
-                        />
-                        <Text style={styles.categoryName}>{category.name}</Text>
-                      </View>
-                      <View style={styles.categoryStats}>
-                        <Text style={styles.categoryCount}>{category.count} apps</Text>
-                        <Text style={styles.categoryAmount}>
-                          ${category.amount.toLocaleString()}
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ) : (
-              <View style={styles.emptyChart}>
-                <Ionicons name="pie-chart-outline" size={64} color="#ccc" />
-                <Text style={styles.emptyChartText}>No applications yet</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Quick Actions */}
-          <View style={styles.quickActionsCard}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-            <View style={styles.quickActionsGrid}>
-              {quickActions.map((action) => (
-                <TouchableOpacity
-                  key={action.id}
-                  style={[styles.actionButton, { borderLeftColor: action.color }]}
-                  onPress={() => handleQuickAction(action)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.actionIconContainer, { backgroundColor: action.color + '20' }]}>
-                    <Ionicons name={action.icon} size={28} color={action.color} />
-                  </View>
-                  <Text style={styles.actionTitle}>{action.title}</Text>
-                  <Ionicons name="chevron-forward" size={20} color="#999" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Recent Activity */}
-          <View style={styles.activityCard}>
-            <View style={styles.activityHeader}>
-              <Text style={styles.sectionTitle}>Recent Activity</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewAllText}>View All</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {/* Sample activities */}
-            <View style={styles.activityList}>
-              <View style={styles.activityItem}>
-                <View style={[styles.activityIcon, { backgroundColor: '#4caf5020' }]}>
-                  <Ionicons name="checkmark-circle" size={24} color="#4caf50" />
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>Application Approved</Text>
-                  <Text style={styles.activitySubtitle}>Food assistance - $2,500</Text>
-                  <Text style={styles.activityTime}>2 hours ago</Text>
-                </View>
-              </View>
-
-              <View style={styles.activityItem}>
-                <View style={[styles.activityIcon, { backgroundColor: '#2196f320' }]}>
-                  <Ionicons name="time" size={24} color="#2196f3" />
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>Application Under Review</Text>
-                  <Text style={styles.activitySubtitle}>Medical assistance</Text>
-                  <Text style={styles.activityTime}>1 day ago</Text>
-                </View>
-              </View>
-
-              <View style={styles.activityItem}>
-                <View style={[styles.activityIcon, { backgroundColor: '#ff980020' }]}>
-                  <Ionicons name="document-text" size={24} color="#ff9800" />
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>New Application Submitted</Text>
-                  <Text style={styles.activitySubtitle}>Education support</Text>
-                  <Text style={styles.activityTime}>3 days ago</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Tips Card */}
-          <View style={styles.tipsCard}>
-            <View style={styles.tipsHeader}>
-              <Ionicons name="bulb" size={24} color="#ffc107" />
-              <Text style={styles.tipsTitle}>Helpful Tips</Text>
-            </View>
-            <Text style={styles.tipsText}>
-              • Provide detailed information in your applications for faster approval{'\n'}
-              • Keep your contact information up to date{'\n'}
-              • Check notifications regularly for updates on your requests
-            </Text>
-          </View>
-
-          <View style={{ height: 30 }} />
-        </ScrollView>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        ))}
       </View>
 
-      <Sidebar 
-        visible={sidebarVisible} 
-        onClose={() => setSidebarVisible(false)}
-        userName={userData?.name || 'Guest User'}
-        userEmail={userData?.email || 'guest@impacttrace.com'}
-        userRole={userData?.role || 'Guest'}
-      />
-    </>
+      {/* Support Resources */}
+      <View style={styles.resourcesSection}>
+        <Text style={styles.sectionTitle}>Support Resources</Text>
+        <View style={styles.resourceCard}>
+          <Ionicons name="call" size={24} color="#A855F7" />
+          <View style={styles.resourceContent}>
+            <Text style={styles.resourceTitle}>24/7 Support Hotline</Text>
+            <Text style={styles.resourceDescription}>
+              Call us anytime for assistance with your application
+            </Text>
+                        <Text style={styles.resourceContact}>1-800-HELP-NOW</Text>
+          </View>
+        </View>
+        
+        <View style={styles.resourceCard}>
+          <Ionicons name="mail" size={24} color="#A855F7" />
+          <View style={styles.resourceContent}>
+            <Text style={styles.resourceTitle}>Email Support</Text>
+            <Text style={styles.resourceDescription}>
+              Get help via email for non-urgent inquiries
+            </Text>
+            <Text style={styles.resourceContact}>support@impacttrace.org</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Success Stories */}
+      <View style={styles.storiesSection}>
+        <Text style={styles.sectionTitle}>Success Stories</Text>
+        <View style={styles.storyCard}>
+          <Ionicons name="heart" size={24} color="#EF4444" />
+          <Text style={styles.storyTitle}>Maria Journey</Text>
+          <Text style={styles.storyDescription}>
+            With the educational support I received, I was able to complete my 
+            nursing degree and now work at the local hospital. Thank you for 
+            believing in me!
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F9FAFB',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#4fc3f7',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 40,
-  },
-  menuButton: {
-    padding: 8,
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   headerContent: {
-    flex: 1,
-    marginLeft: 12,
+    alignItems: 'center',
   },
-  headerTitle: {
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  subtitle: {
     fontSize: 16,
-    color: '#fff',
-    opacity: 0.9,
+    color: '#6B7280',
+    textAlign: 'center',
   },
-  headerSubtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 2,
-  },
-  notificationButton: {
-    padding: 8,
-    position: 'relative',
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: '#f44336',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  notificationBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  totalCard: {
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  totalCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  totalCardContent: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  totalCardLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  totalCardAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#4caf50',
-  },
-  totalCardSubtext: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 8,
-  },
-  chartCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 20,
-    borderRadius: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  statusSection: {
+    padding: 16,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: '#666',
+    color: '#111827',
     marginBottom: 16,
   },
-  chartContainer: {
-    alignItems: 'center',
-  },
-  categorySummary: {
-    width: '100%',
-    marginTop: 20,
-  },
-  categoryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  categoryInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  categoryDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  categoryName: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  categoryStats: {
-    alignItems: 'flex-end',
-  },
-  categoryCount: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 2,
-  },
-  categoryAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4caf50',
-  },
-  emptyChart: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  emptyChartText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 12,
-  },
-  quickActionsCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 16,
+  statusCard: {
+    backgroundColor: '#FFFFFF',
     padding: 20,
-    borderRadius: 16,
-    elevation: 3,
+    borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
-  quickActionsGrid: {
-    marginTop: 12,
+  statusApproved: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#10B981',
   },
-  actionButton: {
+  statusPending: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B',
+  },
+  statusRejected: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#EF4444',
+  },
+  statusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fafafa',
+    marginBottom: 12,
+  },
+  statusTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginLeft: 8,
+  },
+  applicationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  applicationDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  detailText: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  nextSteps: {
+    fontSize: 14,
+    color: '#10B981',
+    fontStyle: 'italic',
+  },
+  actionsSection: {
+    padding: 16,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  actionCard: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  actionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  actionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    textAlign: 'center',
+  },
+  programsSection: {
+    padding: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  seeAllText: {
+    color: '#A855F7',
+    fontWeight: '600',
+  },
+  programCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    borderLeftWidth: 4,
-  },
-  actionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  actionTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  activityCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 20,
-    borderRadius: 16,
-    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
-  activityHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: '#2196f3',
-    fontWeight: '600',
-  },
-  activityList: {
-    marginTop: 8,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  activityIcon: {
+  programIcon: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
+    borderRadius: 24,
+    backgroundColor: '#FAF5FF',
     justifyContent: 'center',
-    marginRight: 12,
+    alignItems: 'center',
+    marginRight: 16,
   },
-  activityContent: {
+  programContent: {
     flex: 1,
   },
-  activityTitle: {
-    fontSize: 15,
+  programTitle: {
+    fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#111827',
     marginBottom: 4,
   },
-  activitySubtitle: {
+  programDescription: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    color: '#6B7280',
+    marginBottom: 8,
   },
-  activityTime: {
+  programCategory: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  categoryText: {
     fontSize: 12,
-    color: '#999',
+    color: '#6B7280',
+    fontWeight: '500',
   },
-  tipsCard: {
-    backgroundColor: '#fffbea',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#ffc107',
+  resourcesSection: {
+    padding: 16,
   },
-  tipsHeader: {
+  resourceCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  tipsTitle: {
+  resourceContent: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  resourceTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  resourceDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  resourceContact: {
+    fontSize: 14,
+    color: '#A855F7',
+    fontWeight: '600',
+  },
+  storiesSection: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  storyCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  storyTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
-    marginLeft: 8,
+    color: '#111827',
+    marginTop: 12,
+    marginBottom: 8,
   },
-  tipsText: {
+  storyDescription: {
     fontSize: 14,
-    color: '#666',
-    lineHeight: 22,
+    color: '#6B7280',
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
 });
