@@ -1,3 +1,4 @@
+// RoleSelectionScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -19,6 +20,7 @@ interface RoleOption {
   description: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
+  route: string; // Add route for navigation
 }
 
 const roles: RoleOption[] = [
@@ -28,6 +30,7 @@ const roles: RoleOption[] = [
     description: 'Manage projects and oversee donations',
     icon: 'people',
     color: '#4F46E5',
+    route: '/admin-home', // Specific route for admin
   },
   {
     id: 'donor',
@@ -35,6 +38,7 @@ const roles: RoleOption[] = [
     description: 'Browse projects and make donations',
     icon: 'heart',
     color: '#EF4444',
+    route: '/donor-home', // Specific route for donor
   },
   {
     id: 'beneficiary',
@@ -42,6 +46,7 @@ const roles: RoleOption[] = [
     description: 'Apply for aid and track applications',
     icon: 'person',
     color: '#A855F7',
+    route: '/beneficiary-home', // Specific route for beneficiary
   },
 ];
 
@@ -53,14 +58,14 @@ export default function RoleSelectionScreen() {
     setSelectedRole(roleId);
     
     try {
-      // Save both onboarding completion and selected role
-      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+      // Save selected role
       await AsyncStorage.setItem('userRole', roleId);
       
-      // Small delay for visual feedback, then navigate
-      setTimeout(() => {
-        router.replace('/login');
-      }, 300);
+      // Navigate to login with role as parameter
+      router.push({
+        pathname: '/login',
+        params: { selectedRole: roleId }
+      });
     } catch (error) {
       console.error('Error saving role:', error);
     }
@@ -107,6 +112,7 @@ export default function RoleSelectionScreen() {
       {/* Title Section */}
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Select Your Role</Text>
+        <Text style={styles.subtitle}>Choose how you want to use the platform</Text>
       </View>
 
       {/* Role Cards ScrollView */}
@@ -158,6 +164,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     color: '#111827',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6B7280',
     textAlign: 'center',
   },
   scrollView: {

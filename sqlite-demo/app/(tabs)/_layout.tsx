@@ -21,9 +21,9 @@ export default function TabLayout() {
     return (
       <Tabs
         screenOptions={{
-          headerStyle: { backgroundColor: '#4fc3f7' },
+          headerStyle: { backgroundColor: '#A855F7' }, // Purple for beneficiary
           headerTintColor: '#fff',
-          tabBarActiveTintColor: '#0288d1',
+          tabBarActiveTintColor: '#A855F7',
           tabBarInactiveTintColor: '#757575',
           tabBarStyle: { paddingBottom: 4, paddingTop: 5, height: 80 },
           tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
@@ -61,26 +61,193 @@ export default function TabLayout() {
         <Tabs.Screen 
           name="home" 
           options={{ 
-            href: null, // Hide the admin/donor home tab
+            href: null,
           }} 
         />
         <Tabs.Screen 
           name="admin" 
           options={{ 
-            href: null, // Hide the projects tab
+            href: null,
           }} 
         />
         <Tabs.Screen 
           name="donor" 
           options={{ 
-            href: null, // Hide the AI-Insights tab
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="admin-home" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="donor-home" 
+          options={{ 
+            href: null,
           }} 
         />
       </Tabs>
     );
   }
 
-  // Default tabs for admin and donor roles
+  // Donor-specific tabs
+  if (userRole === 'donor') {
+    return (
+      <Tabs
+        screenOptions={{
+          headerStyle: { backgroundColor: '#EF4444' }, // Red for donor
+          headerTintColor: '#fff',
+          tabBarActiveTintColor: '#EF4444',
+          tabBarInactiveTintColor: '#757575',
+          tabBarStyle: { paddingBottom: 4, paddingTop: 5, height: 80 },
+          tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+          tabBarShowLabel: true,
+        }}
+      >
+        <Tabs.Screen 
+          name="donor-home" 
+          options={{ 
+            title: 'Home',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="heart" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="donor" 
+          options={{ 
+            title: 'Projects',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="search" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="reports" 
+          options={{ 
+            title: 'My Donations',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="list" size={size} color={color} />
+            ),
+          }} 
+        />
+        {/* Hide tabs that are not relevant for donors */}
+        <Tabs.Screen 
+          name="home" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="admin" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="beneficiary" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="admin-home" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="beneficiary-home" 
+          options={{ 
+            href: null,
+          }} 
+        />
+      </Tabs>
+    );
+  }
+
+  // Admin-specific tabs
+  if (userRole === 'admin') {
+    return (
+      <Tabs
+        screenOptions={{
+          headerStyle: { backgroundColor: '#4F46E5' }, // Indigo for admin
+          headerTintColor: '#fff',
+          tabBarActiveTintColor: '#4F46E5',
+          tabBarInactiveTintColor: '#757575',
+          tabBarStyle: { paddingBottom: 4, paddingTop: 5, height: 80 },
+          tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+          tabBarShowLabel: true,
+        }}
+      >
+        <Tabs.Screen 
+          name="admin-home" 
+          options={{ 
+            title: 'Dashboard',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="shield-checkmark" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="admin" 
+          options={{ 
+            title: 'Projects',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="business" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="beneficiary" 
+          options={{ 
+            title: 'Applications',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="people" size={size} color={color} />
+            ),
+          }} 
+        />
+        <Tabs.Screen 
+          name="reports" 
+          options={{ 
+            title: 'Analytics',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="stats-chart" size={size} color={color} />
+            ),
+          }} 
+        />
+        {/* Hide tabs that are not relevant for admin */}
+        <Tabs.Screen 
+          name="home" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="donor" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="donor-home" 
+          options={{ 
+            href: null,
+          }} 
+        />
+        <Tabs.Screen 
+          name="beneficiary-home" 
+          options={{ 
+            href: null,
+          }} 
+        />
+      </Tabs>
+    );
+  }
+
+  // Default/Public tabs (fallback)
   return (
     <Tabs
       screenOptions={{
@@ -138,13 +305,25 @@ export default function TabLayout() {
           ),
         }} 
       />
-      {/* Hide beneficiary-home tab for admin/donor */}
+      {/* Hide role-specific home screens */}
+      <Tabs.Screen 
+        name="admin-home" 
+        options={{ 
+          href: null,
+        }} 
+      />
+      <Tabs.Screen 
+        name="donor-home" 
+        options={{ 
+          href: null,
+        }} 
+      />
       <Tabs.Screen 
         name="beneficiary-home" 
         options={{ 
-          href: null, // Hide the beneficiary home tab
+          href: null,
         }} 
       />
     </Tabs>
-  );
+  ); 
 }
