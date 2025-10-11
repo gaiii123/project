@@ -35,8 +35,10 @@ app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Initialize database
-initDatabase();
+// Check database initialization (won't recreate if already exists)
+initDatabase().catch(err => {
+  console.error('Database initialization check failed:', err);
+});
 
 // Routes
 app.use('/api/users', userRoutes);
