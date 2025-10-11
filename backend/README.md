@@ -24,7 +24,34 @@ NODE_ENV=development
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 ```
 
-### 3. Start the Server
+### 3. Initialize Database (FIRST TIME ONLY)
+
+**Create database tables:**
+```bash
+node database/setupDatabase.js
+```
+Or use npm script:
+```bash
+npm run db:setup
+```
+
+**Add sample data (optional):**
+```bash
+node database/seedData.js
+```
+Or use npm script:
+```bash
+npm run db:seed
+```
+
+> **Note:** This step only needs to be run ONCE. The database won't be recreated on subsequent server starts.
+> 
+> **Sample Login Credentials (after seeding):**
+> - Admin: `admin@impacttrace.com` / `admin123`
+> - Donor: `john.donor@email.com` / `donor123`
+> - Beneficiary: `mary.beneficiary@email.com` / `beneficiary123`
+
+### 4. Start the Server
 
 **Development Mode (with auto-reload):**
 ```bash
@@ -36,7 +63,7 @@ npm run dev
 npm start
 ```
 
-### 4. Verify Server is Running
+### 5. Verify Server is Running
 
 Open your browser and go to: `http://localhost:5000`
 
@@ -63,6 +90,29 @@ The SQLite database is automatically created at:
 ```
 backend/database/impacttrace.db
 ```
+
+### Database Commands
+
+```bash
+npm run db:setup    # Create database tables (first time only)
+npm run db:seed     # Add sample data
+npm run db:reset    # Delete and reset database
+```
+
+### Key Database Flow
+
+The system follows this workflow:
+1. **Admin creates Projects**
+2. **Beneficiaries apply for Projects** → Creates Aid Applications
+3. **Admin approves/rejects Applications**
+4. **Donors donate to APPROVED Applications** (not directly to projects!)
+5. **System tracks donations and impact**
+
+📚 **Full Documentation:**
+- Database Schema: `database/DATABASE_DOCUMENTATION.md`
+- User Workflows: `database/WORKFLOW_GUIDE.md`
+- Architecture: `database/ARCHITECTURE.md`
+- Quick Start: `database/QUICK_START.md`
 
 The following tables are created automatically:
 - **users** - User authentication and profiles
