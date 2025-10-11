@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// LoginScreen.tsx
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,7 +11,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { apiService } from '../app/services/api';
@@ -18,10 +19,47 @@ import Toast from 'react-native-toast-message';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const selectedRole = params.selectedRole as string;
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentRole, setCurrentRole] = useState<string>('');
+
+  useEffect(() => {
+    if (selectedRole) {
+      setCurrentRole(selectedRole);
+    } else {
+      // If no role selected, get from storage or default to donor
+      AsyncStorage.getItem('userRole').then(role => {
+        setCurrentRole(role || 'donor');
+      });
+    }
+  }, [selectedRole]);
+
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'admin': return 'NGO Admin';
+      case 'donor': return 'Donor';
+      case 'beneficiary': return 'Beneficiary';
+      default: return 'User';
+    }
+  };
+
+  const getRoleBasedRoute = (userRole: string) => {
+    switch (userRole) {
+      case 'admin':
+        return '/(tabs)/admin-home';
+      case 'donor':
+        return '/(tabs)/donor-home';
+      case 'beneficiary':
+        return '/(tabs)/beneficiary-home';
+      default:
+        return '/(tabs)/home';
+    }
+  };
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -64,12 +102,8 @@ export default function LoginScreen() {
 
         // Navigate based on user role after a short delay
         setTimeout(() => {
-          if (response.data.user.role === 'beneficiary') {
-            router.replace('/(tabs)/beneficiary-home' as any);
-          } else {
-            // Admin or donor roles go to default home
-            router.replace('/(tabs)/home' as any);
-          }
+          const route = getRoleBasedRoute(response.data.user.role);
+          router.replace(route as any);
         }, 500);
       } else {
         setLoading(false);
@@ -112,6 +146,11 @@ export default function LoginScreen() {
     }
   };
 
+  const handleRoleChange = () => {
+    // Navigate back to role selection
+    router.back();
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -128,6 +167,16 @@ export default function LoginScreen() {
           </View>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Login to continue making an impact</Text>
+          
+          {/* Role Display */}
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleBadgeText}>
+              Logging in as: {getRoleDisplayName(currentRole)}
+            </Text>
+            <TouchableOpacity onPress={handleRoleChange} style={styles.roleChangeButton}>
+              <Text style={styles.roleChangeText}>Change</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Form */}
@@ -185,14 +234,19 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.loginButtonText}>Login</Text>
+              <Text style={styles.loginButtonText}>
+                Login as {getRoleDisplayName(currentRole)}
+              </Text>
             )}
           </TouchableOpacity>
 
           {/* Sign Up Link */}
           <View style={styles.signUpContainer}>
             <Text style={styles.signUpText}>Don&apos;t have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/signup' as any)}>
+            <TouchableOpacity onPress={() => router.push({
+              pathname: '/signup',
+              params: { selectedRole: currentRole }
+            } as any)}>
               <Text style={styles.signUpLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -212,7 +266,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    paddingTop: 80,
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 40,
     alignItems: 'center',
@@ -236,6 +290,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
+    marginBottom: 16,
+  },
+  roleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 8,
+  },
+  roleBadgeText: {
+    fontSize: 14,
+    color: '#374151',
+    marginRight: 8,
+  },
+  roleChangeButton: {
+    backgroundColor: '#A855F7',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  roleChangeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   form: {
     paddingHorizontal: 20,
