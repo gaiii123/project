@@ -11,10 +11,23 @@ const getAllBeneficiaries = (req, res) => {
         error: err.message 
       });
     }
+    
+    // Format beneficiaries with status from aid_applications
+    const formattedBeneficiaries = (beneficiaries || []).map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.location, // location field stores address
+      status: 'pending', // Default status
+      created_at: user.created_at,
+      updated_at: user.updated_at
+    }));
+    
     res.json({
       success: true,
-      data: beneficiaries,
-      count: beneficiaries.length
+      data: formattedBeneficiaries,
+      count: formattedBeneficiaries.length
     });
   });
 };
@@ -39,9 +52,20 @@ const getBeneficiaryById = (req, res) => {
       });
     }
     
+    // Format response
+    const formattedBeneficiary = {
+      id: beneficiary.id,
+      name: beneficiary.name,
+      email: beneficiary.email,
+      phone: beneficiary.phone,
+      address: beneficiary.location,
+      status: 'pending',
+      created_at: beneficiary.created_at
+    };
+    
     res.json({
       success: true,
-      data: beneficiary
+      data: formattedBeneficiary
     });
   });
 };
@@ -81,11 +105,36 @@ const createBeneficiary = (req, res) => {
       });
     }
 
-    res.status(201).json({
-      success: true,
-      message: 'Beneficiary application submitted successfully',
-      data: result
-    });
+    // Create an aid application to store the needs_description
+    Beneficiary.createApplication(
+      {
+        project_id: 1, // Default project ID - adjust as needed
+        beneficiary_id: result.id,
+        description: needs_description,
+        amount_requested: 0
+      },
+      (appErr, application) => {
+        if (appErr) {
+          console.error('Warning: Failed to create application for beneficiary:', appErr);
+          // Don't fail the request, just log the warning
+        }
+        
+        res.status(201).json({
+          success: true,
+          message: 'Beneficiary application submitted successfully',
+          data: {
+            id: result.id,
+            name: result.name,
+            email: result.email,
+            phone: result.phone,
+            address: result.address,
+            needs_description: result.needs_description,
+            status: result.status || 'pending',
+            application_id: application?.id
+          }
+        });
+      }
+    );
   });
 };
 
@@ -98,6 +147,14 @@ const updateBeneficiaryStatus = (req, res) => {
     return res.status(400).json({
       success: false,
       message: 'Status is required'
+    });
+  }
+
+  const validStatuses = ['pending', 'approved', 'rejected', 'completed', 'under_review'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
     });
   }
 

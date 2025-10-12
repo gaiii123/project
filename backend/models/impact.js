@@ -24,7 +24,7 @@ class Impact {
         d.amount as donation_amount
       FROM impact_tracking it
       LEFT JOIN projects p ON it.project_id = p.id
-      LEFT JOIN beneficiaries b ON it.beneficiary_id = b.id
+      LEFT JOIN users b ON it.id = b.id
       LEFT JOIN donations d ON it.donation_id = d.id
       ORDER BY it.created_at DESC
     `;
@@ -41,7 +41,7 @@ class Impact {
         d.donor_name
       FROM impact_tracking it
       LEFT JOIN projects p ON it.project_id = p.id
-      LEFT JOIN beneficiaries b ON it.beneficiary_id = b.id
+      LEFT JOIN users b ON it.id = b.id
       LEFT JOIN donations d ON it.donation_id = d.id
       WHERE it.id = ?
     `;
