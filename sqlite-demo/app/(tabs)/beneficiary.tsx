@@ -63,7 +63,7 @@ export default function BeneficiaryScreen() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'approved': return '#4caf50';
       case 'rejected': return '#f44336';
@@ -80,7 +80,7 @@ export default function BeneficiaryScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Beneficiary Application</Text>
       <Text style={styles.description}>
-        Apply for aid and track your application status.  here to help.
+        Apply for aid and track your application status. We are here to help.
       </Text>
       
       {/* Application Form */}
@@ -151,7 +151,9 @@ export default function BeneficiaryScreen() {
               <View style={styles.beneficiaryHeader}>
                 <Text style={styles.beneficiaryName}>{beneficiary.name}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(beneficiary.status) }]}>
-                  <Text style={styles.statusText}>{beneficiary.status.toUpperCase()}</Text>
+                  <Text style={styles.statusText}>
+                    {(beneficiary.status || 'pending').toUpperCase()}
+                  </Text>
                 </View>
               </View>
               <Text style={styles.beneficiaryEmail}>{beneficiary.email}</Text>

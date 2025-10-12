@@ -113,7 +113,9 @@ class ApiService {
   }
 
   async getBeneficiaries(): Promise<ApiResponse<Beneficiary[]>> {
-    return this.fetchWithErrorHandling<Beneficiary[]>('/beneficiaries');
+    return this.fetchWithErrorHandling<Beneficiary[]>('/beneficiaries',
+      { method: 'GET' }
+    );
   }
 
   async updateBeneficiaryStatus(id: number, status: string): Promise<ApiResponse<void>> {
