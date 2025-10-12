@@ -9,6 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -50,16 +51,20 @@ export default function AIInsightsScreen() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   const handleSend = (text?: string) => {
     const messageText = text || inputText.trim();
     if (!messageText) return;
+
+    // Dismiss keyboard
+    Keyboard.dismiss();
 
     // Add user message
     const userMessage: Message = {
@@ -119,16 +124,33 @@ export default function AIInsightsScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={100}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      {/* Header */}
+      {/* Custom Header */}
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Ionicons name="sparkles" size={24} color="#fff" />
-          <Text style={styles.headerTitle}>AI Insights Assistant</Text>
+        <View style={styles.headerTop}>
+          <View style={styles.headerContent}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="sparkles" size={28} color="#fff" />
+            </View>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.headerTitle}>AI Insights Assistant</Text>
+              <Text style={styles.headerSubtitle}>Powered by AI • Always Learning</Text>
+            </View>
+          </View>
         </View>
-        <Text style={styles.headerSubtitle}>Powered by AI • Always Learning</Text>
+        <View style={styles.headerStats}>
+          <View style={styles.statItem}>
+            <Ionicons name="chatbubbles-outline" size={16} color="#fff" />
+            <Text style={styles.statText}>{messages.length} messages</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Ionicons name="bulb-outline" size={16} color="#fff" />
+            <Text style={styles.statText}>Smart Analytics</Text>
+          </View>
+        </View>
       </View>
 
       {/* Quick Actions */}
@@ -242,31 +264,68 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#0288d1',
-    paddingVertical: 16,
+    paddingTop: 50,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  headerTop: {
+    marginBottom: 12,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
+    marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 12,
     color: '#e3f2fd',
-    marginTop: 4,
-    marginLeft: 34,
+    fontWeight: '500',
+  },
+  headerStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    gap: 16,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statText: {
+    fontSize: 13,
+    color: '#e3f2fd',
+    fontWeight: '500',
+  },
+  statDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   quickActionsContainer: {
     padding: 16,

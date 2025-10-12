@@ -1,5 +1,5 @@
 // components/CreateProjectModal.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { apiService } from '../services/api';
+import { Application } from '../services/types';
 
 interface CreateProjectModalProps {
   visible: boolean;
@@ -27,6 +28,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   onProjectCreated
 }) => {
   const [formData, setFormData] = useState({
+    application_id: '',
     name: '',
     category: '',
     target_amount: '',
@@ -35,6 +37,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     target_beneficiaries: '',
     description: ''
   });
+  const [approvedApplications, setApprovedApplications] = useState<Application[]>([]);
+  const [loadingApplications, setLoadingApplications] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -57,8 +61,53 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     'Ongoing'
   ];
 
+  // Load approved applications when modal opens
+  useEffect(() => {
+    if (visible) {
+      loadApprovedApplications();
+    }
+  }, [visible]);
+
+  const loadApprovedApplications = async () => {
+    try {
+      setLoadingApplications(true);
+      const response = await apiService.getApplicationsByStatus('approved');
+      
+      // Filter out applications that already have projects
+      const availableApplications = response.data.filter(app => !app.project_id);
+      setApprovedApplications(availableApplications);
+    } catch (error: any) {
+      console.error('Error loading applications:', error);
+      Alert.alert('Error', 'Failed to load approved applications');
+    } finally {
+      setLoadingApplications(false);
+    }
+  };
+
+  const handleApplicationSelect = (application: Application) => {
+    // Pre-fill form with application data
+    setFormData({
+      application_id: application.id.toString(),
+      name: application.title,
+      category: application.category,
+      target_amount: application.target_amount.toString(),
+      timeline: formData.timeline || '3 Months',
+      location: application.location,
+      target_beneficiaries: formData.target_beneficiaries,
+      description: application.description
+    });
+    
+    if (errors.application_id) {
+      setErrors({ ...errors, application_id: '' });
+    }
+  };
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
+
+    if (!formData.application_id) {
+      newErrors.application_id = 'Please select an approved application';
+    }
 
     if (!formData.name.trim()) {
       newErrors.name = 'Project name is required';
@@ -107,9 +156,13 @@ ${formData.description}
       `.trim();
 
       const projectData = {
+        application_id: Number(formData.application_id),
         name: formData.name.trim(),
+        title: formData.name.trim(),
         description: fullDescription,
-        target_amount: Number(formData.target_amount)
+        target_amount: Number(formData.target_amount),
+        category: formData.category,
+        location: formData.location || ''
       };
 
       const response = await apiService.createProject(projectData);
@@ -140,6 +193,7 @@ ${formData.description}
 
   const resetForm = () => {
     setFormData({
+      application_id: '',
       name: '',
       category: '',
       target_amount: '',
@@ -178,6 +232,65 @@ ${formData.description}
 
           {/* Form */}
           <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
+            {/* Select Application */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Select Approved Application <Text style={styles.required}>*</Text>
+              </Text>
+              {loadingApplications ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="#4fc3f7" />
+                  <Text style={styles.loadingText}>Loading applications...</Text>
+                </View>
+              ) : approvedApplications.length === 0 ? (
+                <View style={styles.emptyApplications}>
+                  <Ionicons name="alert-circle-outline" size={24} color="#ff9800" />
+                  <Text style={styles.emptyApplicationsText}>
+                    No approved applications available. Please approve applications first.
+                  </Text>
+                </View>
+              ) : (
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false} 
+                  style={styles.applicationScroll}
+                >
+                  {approvedApplications.map((app) => (
+                    <TouchableOpacity
+                      key={app.id}
+                      style={[
+                        styles.applicationCard,
+                        formData.application_id === app.id.toString() && styles.applicationCardSelected
+                      ]}
+                      onPress={() => handleApplicationSelect(app)}
+                    >
+                      <View style={styles.applicationCardHeader}>
+                        <Ionicons 
+                          name={formData.application_id === app.id.toString() ? "checkmark-circle" : "document-text-outline"} 
+                          size={20} 
+                          color={formData.application_id === app.id.toString() ? "#4fc3f7" : "#666"} 
+                        />
+                        <Text style={[
+                          styles.applicationCardTitle,
+                          formData.application_id === app.id.toString() && styles.applicationCardTitleSelected
+                        ]}>
+                          {app.title}
+                        </Text>
+                      </View>
+                      <Text style={styles.applicationCardCategory}>{app.category}</Text>
+                      <Text style={styles.applicationCardAmount}>
+                        Target: ${app.target_amount.toLocaleString()}
+                      </Text>
+                      <Text style={styles.applicationCardBeneficiary}>
+                        By: {app.beneficiary_name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+              {errors.application_id && <Text style={styles.errorText}>{errors.application_id}</Text>}
+            </View>
+
             {/* Project Name */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>
@@ -457,6 +570,78 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold'
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    gap: 10
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#666'
+  },
+  emptyApplications: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#fff3e0',
+    borderRadius: 8,
+    gap: 10
+  },
+  emptyApplicationsText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#e65100',
+    lineHeight: 18
+  },
+  applicationScroll: {
+    marginVertical: 5
+  },
+  applicationCard: {
+    width: 220,
+    padding: 15,
+    backgroundColor: '#fafafa',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+    marginRight: 12
+  },
+  applicationCardSelected: {
+    backgroundColor: '#e3f2fd',
+    borderColor: '#4fc3f7'
+  },
+  applicationCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8
+  },
+  applicationCardTitle: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333'
+  },
+  applicationCardTitleSelected: {
+    color: '#0277bd'
+  },
+  applicationCardCategory: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4
+  },
+  applicationCardAmount: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4caf50',
+    marginBottom: 4
+  },
+  applicationCardBeneficiary: {
+    fontSize: 11,
+    color: '#999'
   }
 });
 

@@ -6,12 +6,16 @@ export default function DonorTabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#4fc3f7' },
-        headerTintColor: '#fff',
+        headerShown: false,
         tabBarActiveTintColor: '#0288d1',
         tabBarInactiveTintColor: '#757575',
-        tabBarStyle: { paddingBottom: 4, paddingTop: 1, height: 60 },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarStyle: { 
+          paddingBottom: 15, 
+          paddingTop: 5, 
+          height: 65,
+          marginBottom: 35,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         tabBarShowLabel: true,
       }}
     >
@@ -19,7 +23,6 @@ export default function DonorTabLayout() {
         name="donor-home" 
         options={{ 
           title: 'Home',
-          headerShown: true,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -29,7 +32,6 @@ export default function DonorTabLayout() {
         name="donor-projects" 
         options={{ 
           title: 'Discover Projects',
-          headerShown: true,
           tabBarLabel: 'Projects',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
@@ -40,7 +42,6 @@ export default function DonorTabLayout() {
         name="donor-impact" 
         options={{ 
           title: 'My Impact',
-          headerShown: false,
           tabBarLabel: 'Impact',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart-outline" size={size} color={color} />
@@ -92,6 +93,12 @@ export default function DonorTabLayout() {
       />
       <Tabs.Screen 
         name="beneficiary" 
+        options={{ 
+          href: null,
+        }}  
+      />
+      <Tabs.Screen 
+        name="application-history" 
         options={{ 
           href: null,
         }}  

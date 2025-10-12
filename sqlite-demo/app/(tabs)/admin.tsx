@@ -66,10 +66,10 @@ export default function ProjectsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Custom Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Active Projects</Text>
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.headerTitle}>Project Management</Text>
           <Text style={styles.headerSubtitle}>Manage and track ongoing projects</Text>
         </View>
         <TouchableOpacity 
@@ -77,7 +77,6 @@ export default function ProjectsScreen() {
           onPress={() => setShowCreateModal(true)}
         >
           <Ionicons name="add" size={24} color="white" />
-          <Text style={styles.newProjectButtonText}>New Project</Text>
         </TouchableOpacity>
       </View>
 
@@ -226,34 +225,42 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fdff'
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#4fc3f7',
+    paddingTop: 50,
+    paddingBottom: 25,
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  headerTextContainer: {
+    flex: 1,
+  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5
+    color: '#fff',
+    marginBottom: 6
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#666'
+    fontSize: 15,
+    color: '#fff',
+    opacity: 0.95
   },
   newProjectButton: {
-    backgroundColor: '#4fc3f7',
-    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
-    gap: 5
+    borderWidth: 2,
+    borderColor: 'white',
   },
   newProjectButtonText: {
     color: 'white',

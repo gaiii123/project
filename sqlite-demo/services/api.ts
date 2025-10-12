@@ -11,8 +11,10 @@ import {
   DonorImpactData,
   ApiResponse 
 } from './types';
+import { API_BASE_URL, printConfig } from './config';
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Change to your backend URL
+// Print configuration on load
+printConfig();
 
 // Auth types
 export interface SignupData {
@@ -224,7 +226,7 @@ class ApiService {
     return this.fetchWithErrorHandling<Application[]>(`/applications/status/${status}`);
   }
 
-  async createApplication(applicationData: Omit<Application, 'id' | 'created_at' | 'updated_at' | 'status' | 'reviewed_by' | 'review_notes' | 'reviewed_at'>): Promise<ApiResponse<Application>> {
+  async createApplication(applicationData: Omit<Application, 'id' | 'created_at' | 'updated_at' | 'status' | 'reviewed_by' | 'review_notes' | 'reviewed_at' | 'beneficiary_name' | 'beneficiary_email' | 'beneficiary_phone' | 'beneficiary_location' | 'reviewed_by_name'>): Promise<ApiResponse<Application>> {
     return this.fetchWithErrorHandling<Application>('/applications', {
       method: 'POST',
       body: JSON.stringify(applicationData),
@@ -238,7 +240,7 @@ class ApiService {
     });
   }
 
-  async updateApplication(id: number, applicationData: Partial<Omit<Application, 'id' | 'created_at' | 'updated_at' | 'status' | 'reviewed_by' | 'review_notes' | 'reviewed_at'>>): Promise<ApiResponse<Application>> {
+  async updateApplication(id: number, applicationData: Partial<Omit<Application, 'id' | 'created_at' | 'updated_at' | 'status' | 'reviewed_by' | 'review_notes' | 'reviewed_at' | 'beneficiary_name' | 'beneficiary_email' | 'beneficiary_phone' | 'beneficiary_location' | 'reviewed_by_name'>>): Promise<ApiResponse<Application>> {
     return this.fetchWithErrorHandling<Application>(`/applications/${id}`, {
       method: 'PUT',
       body: JSON.stringify(applicationData),

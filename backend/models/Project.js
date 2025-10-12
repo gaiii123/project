@@ -5,6 +5,7 @@ class Project {
   // Create new project
   static create(projectData, callback) {
     const { 
+      application_id,
       title, 
       description, 
       category, 
@@ -17,11 +18,12 @@ class Project {
     } = projectData;
     
     const sql = `INSERT INTO projects (
-      title, description, category, target_amount, location, 
+      application_id, title, description, category, target_amount, location, 
       image_url, start_date, end_date, created_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
     db.run(sql, [
+      application_id,
       title, 
       description, 
       category || 'General', 
@@ -43,9 +45,13 @@ class Project {
         p.*,
         p.title as name,
         p.current_amount as collected_amount,
-        u.name as creator_name
+        u.name as creator_name,
+        aa.beneficiary_id,
+        b.name as beneficiary_name
       FROM projects p
       LEFT JOIN users u ON p.created_by = u.id
+      LEFT JOIN aid_applications aa ON p.application_id = aa.id
+      LEFT JOIN users b ON aa.beneficiary_id = b.id
       ORDER BY p.created_at DESC
     `;
     db.all(sql, [], callback);
@@ -58,9 +64,16 @@ class Project {
         p.*,
         p.title as name,
         p.current_amount as collected_amount,
-        u.name as creator_name
+        u.name as creator_name,
+        aa.beneficiary_id,
+        b.name as beneficiary_name,
+        b.email as beneficiary_email,
+        b.phone as beneficiary_phone,
+        b.location as beneficiary_location
       FROM projects p
       LEFT JOIN users u ON p.created_by = u.id
+      LEFT JOIN aid_applications aa ON p.application_id = aa.id
+      LEFT JOIN users b ON aa.beneficiary_id = b.id
       WHERE p.id = ?
     `;
     db.get(sql, [id], callback);
@@ -117,6 +130,8 @@ class Project {
         p.title as name,
         p.current_amount as collected_amount,
         u.name as creator_name,
+        aa.beneficiary_id,
+        b.name as beneficiary_name,
         (CAST(p.current_amount AS REAL) / p.target_amount) * 100 as progress_percentage,
         CASE 
           WHEN p.current_amount >= p.target_amount THEN 'completed'
@@ -124,6 +139,8 @@ class Project {
         END as funding_status
       FROM projects p
       LEFT JOIN users u ON p.created_by = u.id
+      LEFT JOIN aid_applications aa ON p.application_id = aa.id
+      LEFT JOIN users b ON aa.beneficiary_id = b.id
       WHERE p.status = 'active'
       ORDER BY p.target_amount DESC, p.current_amount DESC
       LIMIT ?

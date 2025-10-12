@@ -10,12 +10,13 @@ class Application {
         u.name as beneficiary_name,
         u.email as beneficiary_email,
         u.phone as beneficiary_phone,
+        p.id as project_id,
         p.title as project_title,
         p.description as project_description,
         reviewer.name as reviewed_by_name
       FROM aid_applications aa
       LEFT JOIN users u ON aa.beneficiary_id = u.id
-      LEFT JOIN projects p ON aa.project_id = p.id
+      LEFT JOIN projects p ON p.application_id = aa.id
       LEFT JOIN users reviewer ON aa.reviewed_by = reviewer.id
       ORDER BY 
         CASE aa.status 
@@ -45,7 +46,7 @@ class Application {
         reviewer.name as reviewed_by_name
       FROM aid_applications aa
       LEFT JOIN users u ON aa.beneficiary_id = u.id
-      LEFT JOIN projects p ON aa.project_id = p.id
+      LEFT JOIN projects p ON p.application_id = aa.id
       LEFT JOIN users reviewer ON aa.reviewed_by = reviewer.id
       WHERE aa.id = ?
     `;
@@ -62,7 +63,7 @@ class Application {
         p.description as project_description,
         reviewer.name as reviewed_by_name
       FROM aid_applications aa
-      LEFT JOIN projects p ON aa.project_id = p.id
+      LEFT JOIN projects p ON p.application_id = aa.id
       LEFT JOIN users reviewer ON aa.reviewed_by = reviewer.id
       WHERE aa.beneficiary_id = ?
       ORDER BY aa.created_at DESC
@@ -79,11 +80,12 @@ class Application {
         u.name as beneficiary_name,
         u.email as beneficiary_email,
         u.phone as beneficiary_phone,
+        p.id as project_id,
         p.title as project_title,
         p.description as project_description
       FROM aid_applications aa
       LEFT JOIN users u ON aa.beneficiary_id = u.id
-      LEFT JOIN projects p ON aa.project_id = p.id
+      LEFT JOIN projects p ON p.application_id = aa.id
       WHERE aa.status = ?
       ORDER BY aa.created_at DESC
     `;
@@ -95,19 +97,25 @@ class Application {
   static create(data, callback) {
     const query = `
       INSERT INTO aid_applications (
-        project_id, beneficiary_id, application_type, description,
-        amount_requested, items_requested, reason, voice_recording_url, documents
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        beneficiary_id, title, description, category, application_type,
+        target_amount, location, items_requested, reason, image_url,
+        start_date, end_date, voice_recording_url, documents
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
-      data.project_id,
       data.beneficiary_id,
-      data.application_type,
+      data.title,
       data.description,
-      data.amount_requested || null,
+      data.category,
+      data.application_type,
+      data.target_amount,
+      data.location,
       data.items_requested || null,
-      data.reason || null,
+      data.reason,
+      data.image_url || null,
+      data.start_date || null,
+      data.end_date || null,
       data.voice_recording_url || null,
       data.documents || null
     ];
@@ -121,11 +129,9 @@ class Application {
       SELECT 
         aa.*,
         u.name as beneficiary_name,
-        u.email as beneficiary_email,
-        p.title as project_title
+        u.email as beneficiary_email
       FROM aid_applications aa
       LEFT JOIN users u ON aa.beneficiary_id = u.id
-      LEFT JOIN projects p ON aa.project_id = p.id
       WHERE aa.id = ?
     `;
 
@@ -150,8 +156,9 @@ class Application {
   // Update application
   static update(id, updates, callback) {
     const allowedFields = [
-      'application_type', 'description', 'amount_requested', 
-      'items_requested', 'reason', 'voice_recording_url', 'documents'
+      'title', 'description', 'category', 'application_type', 'target_amount',
+      'location', 'items_requested', 'reason', 'image_url', 'start_date', 
+      'end_date', 'voice_recording_url', 'documents'
     ];
     
     const updateFields = [];

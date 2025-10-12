@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
 export interface UserData {
+    id: number;
     name: string;
     email: string;
     phone: string;

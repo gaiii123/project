@@ -1,5 +1,6 @@
 // controllers/applicationController.js
 const Application = require('../models/applications');
+const Project = require('../models/Project');
 
 // Get all aid applications with related data
 exports.getAllApplications = (req, res) => {
@@ -78,22 +79,35 @@ exports.getApplicationsByStatus = (req, res) => {
 // Create new application
 exports.createApplication = (req, res) => {
   const {
-    project_id,
     beneficiary_id,
-    application_type,
+    title,
     description,
-    amount_requested,
+    category,
+    application_type,
+    target_amount,
+    location,
     items_requested,
     reason,
+    image_url,
+    start_date,
+    end_date,
     voice_recording_url,
     documents
   } = req.body;
 
   // Validation
-  if (!project_id || !beneficiary_id || !application_type || !description) {
+  if (!beneficiary_id || !title || !description || !category || !application_type || !target_amount || !location || !reason) {
     return res.status(400).json({ 
       success: false, 
-      message: 'Missing required fields: project_id, beneficiary_id, application_type, description' 
+      message: 'Missing required fields: beneficiary_id, title, description, category, application_type, target_amount, location, reason' 
+    });
+  }
+
+  // Validate target_amount is a positive number
+  if (isNaN(target_amount) || target_amount <= 0) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Target amount must be a positive number' 
     });
   }
 
@@ -247,5 +261,82 @@ exports.getApplicationStats = (req, res) => {
       });
     }
     res.json({ success: true, data: row });
+  });
+};
+
+// Create project from approved application
+exports.createProjectFromApplication = (req, res) => {
+  const { id } = req.params; // application ID
+
+  // First, get the application details
+  Application.getById(id, (err, application) => {
+    if (err) {
+      console.error('Error fetching application:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error fetching application',
+        error: err.message 
+      });
+    }
+
+    if (!application) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Application not found' 
+      });
+    }
+
+    // Check if application is approved
+    if (application.status !== 'approved') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Only approved applications can be converted to projects' 
+      });
+    }
+
+    // Check if a project already exists for this application
+    if (application.project_title) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'A project already exists for this application' 
+      });
+    }
+
+    // Create project from application data
+    const projectData = {
+      application_id: application.id,
+      title: application.title,
+      description: application.description,
+      category: application.category,
+      target_amount: application.target_amount,
+      location: application.location,
+      image_url: application.image_url,
+      start_date: application.start_date,
+      end_date: application.end_date,
+      created_by: req.user?.id || application.reviewed_by || 1
+    };
+
+    Project.create(projectData, (err, result) => {
+      if (err) {
+        console.error('Error creating project:', err);
+        if (err.message && err.message.includes('UNIQUE constraint failed')) {
+          return res.status(400).json({
+            success: false,
+            message: 'A project already exists for this application'
+          });
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'Error creating project from application',
+          error: err.message
+        });
+      }
+
+      res.status(201).json({
+        success: true,
+        message: 'Project created successfully from application',
+        data: result
+      });
+    });
   });
 };

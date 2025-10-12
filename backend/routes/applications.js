@@ -12,17 +12,20 @@ router.get('/stats', applicationController.getApplicationStats);
 // Get applications by status
 router.get('/status/:status', applicationController.getApplicationsByStatus);
 
+// Get applications by beneficiary (MUST be before /:id)
+router.get('/beneficiary/:beneficiaryId', applicationController.getApplicationsByBeneficiary);
+
 // Get application by ID
 router.get('/:id', applicationController.getApplicationById);
-
-// Get applications by beneficiary
-router.get('/beneficiary/:beneficiaryId', applicationController.getApplicationsByBeneficiary);
 
 // Create new application
 router.post('/', applicationController.createApplication);
 
 // Update application status
 router.put('/:id/status', applicationController.updateApplicationStatus);
+
+// Create project from approved application
+router.post('/:id/create-project', applicationController.createProjectFromApplication);
 
 // Update application
 router.put('/:id', applicationController.updateApplication);

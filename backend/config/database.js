@@ -68,38 +68,22 @@ const initDatabase = async () => {
           )
         `);
 
-        // Projects table (Created by Admin)
-        db.run(`
-          CREATE TABLE projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            category TEXT NOT NULL,
-            target_amount REAL NOT NULL,
-            current_amount REAL DEFAULT 0,
-            location TEXT,
-            status TEXT DEFAULT 'active' CHECK(status IN ('active', 'completed', 'archived')),
-            image_url TEXT,
-            start_date DATE,
-            end_date DATE,
-            created_by INTEGER NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
-          )
-        `);
-
-        // Aid Applications table (Beneficiaries apply for Projects)
+        // Aid Applications table (Beneficiaries submit applications with all project details)
         db.run(`
           CREATE TABLE aid_applications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id INTEGER NOT NULL,
             beneficiary_id INTEGER NOT NULL,
-            application_type TEXT NOT NULL,
+            title TEXT NOT NULL,
             description TEXT NOT NULL,
-            amount_requested REAL,
+            category TEXT NOT NULL,
+            application_type TEXT NOT NULL,
+            target_amount REAL NOT NULL,
+            location TEXT NOT NULL,
             items_requested TEXT,
-            reason TEXT,
+            reason TEXT NOT NULL,
+            image_url TEXT,
+            start_date DATE,
+            end_date DATE,
             voice_recording_url TEXT,
             documents TEXT,
             status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected', 'under_review')),
@@ -108,9 +92,31 @@ const initDatabase = async () => {
             reviewed_at DATETIME,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
             FOREIGN KEY (beneficiary_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
+          )
+        `);
+
+        // Projects table (Created by Admin from approved applications)
+        db.run(`
+          CREATE TABLE projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            application_id INTEGER NOT NULL UNIQUE,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            category TEXT NOT NULL,
+            target_amount REAL NOT NULL,
+            current_amount REAL DEFAULT 0,
+            location TEXT NOT NULL,
+            status TEXT DEFAULT 'active' CHECK(status IN ('active', 'completed', 'archived')),
+            image_url TEXT,
+            start_date DATE,
+            end_date DATE,
+            created_by INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (application_id) REFERENCES aid_applications(id) ON DELETE CASCADE,
+            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
           )
         `);
 
@@ -196,12 +202,11 @@ const initDatabase = async () => {
         `);
 
         // Create indexes for performance
-        db.run('CREATE INDEX idx_donations_application ON donations(application_id)');
         db.run('CREATE INDEX idx_donations_donor ON donations(donor_id)');
         db.run('CREATE INDEX idx_donations_project ON donations(project_id)');
         db.run('CREATE INDEX idx_applications_beneficiary ON aid_applications(beneficiary_id)');
-        db.run('CREATE INDEX idx_applications_project ON aid_applications(project_id)');
         db.run('CREATE INDEX idx_applications_status ON aid_applications(status)');
+        db.run('CREATE INDEX idx_projects_application ON projects(application_id)');
         db.run('CREATE INDEX idx_projects_status ON projects(status)');
         db.run('CREATE INDEX idx_users_role ON users(role)');
         db.run('CREATE INDEX idx_impact_project ON impact_tracking(project_id)');

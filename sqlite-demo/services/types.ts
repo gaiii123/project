@@ -13,13 +13,18 @@ export interface Beneficiary {
 
 export interface Application {
   id: number;
-  project_id: number;
   beneficiary_id: number;
-  application_type: string;
+  title: string;
   description: string;
-  amount_requested?: number;
+  category: string;
+  application_type: string;
+  target_amount: number;
+  location: string;
   items_requested?: string;
-  reason?: string;
+  reason: string;
+  image_url?: string;
+  start_date?: string;
+  end_date?: string;
   voice_recording_url?: string;
   documents?: string;
   status: 'pending' | 'approved' | 'rejected' | 'under_review';
@@ -28,15 +33,14 @@ export interface Application {
   reviewed_at?: string;
   created_at: string;
   updated_at: string;
-  // Joined fields
   beneficiary_name?: string;
   beneficiary_email?: string;
   beneficiary_phone?: string;
   beneficiary_location?: string;
-  project_title?: string;
-  project_description?: string;
-  project_category?: string;
   reviewed_by_name?: string;
+  project_id?: number; // ID of project created from this application
+  project_title?: string; // Title of project created from this application
+  project_description?: string; // Description of project created from this application
 }
 
 export interface Donation {
@@ -97,22 +101,19 @@ export interface ImpactSummary {
 }
 
 export interface BeneficiaryDashboardData {
-  totalDonations: number;
-  categories: {
-    name: string;
-    count: number;
-    amount: number;
-    color: string;
-  }[];
+  totalDonationsReceived: number;
   recentActivities: {
     id: number;
-    type: 'approved' | 'review' | 'submitted' | 'rejected';
+    type: 'approved' | 'under_review' | 'pending' | 'rejected';
+    icon: string;
+    color: string;
     title: string;
     subtitle: string;
     timestamp: string;
   }[];
   applicationStats: {
     pending: number;
+    under_review: number;
     approved: number;
     rejected: number;
     total: number;

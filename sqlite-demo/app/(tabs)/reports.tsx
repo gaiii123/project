@@ -4,25 +4,25 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ReportsScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Reports & Analytics</Text>
+        <Text style={styles.headerSubtitle}>
+          View detailed analytics and reports
+        </Text>
+      </View>
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Reports</Text>
-          <Text style={styles.subtitle}>
-            View detailed analytics and reports
-          </Text>
-        </View>
-
         <View style={styles.contentContainer}>
           <View style={styles.iconContainer}>
             <Ionicons name="analytics-outline" size={80} color="#0288d1" />
@@ -52,14 +52,37 @@ export default function ReportsScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8fdff',
+  },
+  header: {
+    backgroundColor: '#4fc3f7',
+    paddingTop: 50,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
+    marginBottom: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 6,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: '#fff',
+    opacity: 0.95,
   },
   scrollView: {
     flex: 1,
@@ -67,20 +90,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 22,
   },
   contentContainer: {
     backgroundColor: '#fff',

@@ -1,5 +1,5 @@
 // app/(tabs)/home.tsx
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import { DonationStats, ImpactSummary } from '../../services/types';
@@ -105,7 +105,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <>
+    <SafeAreaView style={styles.safeArea}>
       <Sidebar
         visible={sidebarVisible}
         onClose={() => setSidebarVisible(false)}
@@ -114,19 +114,28 @@ export default function HomeScreen() {
         userRole={userData?.role || 'Guest'}
       />
       
-      <ScrollView style={styles.container}>
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={() => setSidebarVisible(true)}
+        >
+          <View style={styles.hamburger}>
+            <View style={styles.hamburgerLine} />
+            <View style={styles.hamburgerLine} />
+            <View style={styles.hamburgerLine} />
+          </View>
+        </TouchableOpacity>
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.headerTitle}>Donation Tracker</Text>
+          <Text style={styles.headerSubtitle}>
+            Track donations and manage projects
+          </Text>
+        </View>
+      </View>
+      
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
         <View style={styles.heroSection}>
-          <TouchableOpacity 
-            style={styles.menuButton}
-            onPress={() => setSidebarVisible(true)}
-          >
-            <View style={styles.hamburger}>
-              <View style={styles.hamburgerLine} />
-              <View style={styles.hamburgerLine} />
-              <View style={styles.hamburgerLine} />
-            </View>
-          </TouchableOpacity>
-          
           <View style={styles.logoContainer}>
             <Image 
               source={require('../../assets/images/Donation-logo.png')} 
@@ -135,8 +144,8 @@ export default function HomeScreen() {
             />
           </View>
           
-          <Text style={styles.title}>Welcome to Donation Tracker</Text>
-          <Text style={styles.subtitle}>
+          <Text style={styles.welcomeTitle}>Welcome to Donation Tracker</Text>
+          <Text style={styles.welcomeSubtitle}>
             Track donations, manage projects, and help communities in real-time.
           </Text>
         </View>
@@ -244,36 +253,54 @@ export default function HomeScreen() {
           </Text>
         </View>
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#f8fdff' 
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#4fc3f7',
   },
-  heroSection: { 
-    padding: 25, 
-    paddingTop: 20,
-    backgroundColor: '#4fc3f7', 
-    alignItems: 'center',
-    position: 'relative'
+  header: {
+    backgroundColor: '#4fc3f7',
+    paddingTop: 50,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  headerTextContainer: {
+    flex: 1,
+    marginLeft: 15,
+    marginTop: 5,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 6,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    color: '#fff',
+    opacity: 0.95,
   },
   menuButton: {
-    position: 'absolute',
-    top: 15,
-    left: 15,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    padding: 12,
+    padding: 10,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'white',
-    zIndex: 10,
   },
   hamburger: {
-    width: 25,
-    height: 20,
+    width: 24,
+    height: 18,
     justifyContent: 'space-between',
   },
   hamburgerLine: {
@@ -282,8 +309,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 2,
   },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#f8fdff' 
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  heroSection: { 
+    padding: 20, 
+    paddingTop: 25,
+    backgroundColor: '#e3f2fd', 
+    alignItems: 'center',
+    position: 'relative'
+  },
   logoContainer: {
-    marginTop: 50,
+    marginTop: 10,
     marginBottom: 15,
     alignItems: 'center',
   },
@@ -291,19 +332,18 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
   },
-  title: { 
-    fontSize: 28, 
+  welcomeTitle: { 
+    fontSize: 24, 
     fontWeight: 'bold', 
-    color: 'white', 
+    color: '#333', 
     marginBottom: 8,
     textAlign: 'center',
     marginTop: 10,
   },
-  subtitle: { 
-    fontSize: 16, 
-    color: 'white', 
+  welcomeSubtitle: { 
+    fontSize: 15, 
+    color: '#666', 
     textAlign: 'center',
-    opacity: 0.9
   },
   statsSection: { 
     padding: 20 

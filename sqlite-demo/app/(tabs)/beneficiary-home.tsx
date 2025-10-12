@@ -1,23 +1,13 @@
 // app/(tabs)/beneficiary-home.tsx
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { PieChart } from 'react-native-chart-kit';
 import LoadingSpinner from '../../components/loadingSpinner';
 import ErrorMessage from '../../components/errorMessage';
 import Sidebar from '../../components/SideBar';
 import { getCurrentUser, UserData } from '../../Utils/auth';
 import { router } from 'expo-router';
-
-const screenWidth = Dimensions.get('window').width;
-
-// Application category data type
-interface ApplicationCategory {
-  name: string;
-  count: number;
-  amount: number;
-  color: string;
-}
+import { apiService } from '../../services/api';
 
 // Quick action type
 interface QuickAction {
@@ -28,13 +18,30 @@ interface QuickAction {
   route: string;
 }
 
+interface ActivityItem {
+  id: number;
+  type: string;
+  icon: string;
+  color: string;
+  title: string;
+  subtitle: string;
+  timestamp: string;
+}
+
 export default function BeneficiaryHomeScreen() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [totalDonationsReceived, setTotalDonationsReceived] = useState(0);
-  const [applicationCategories, setApplicationCategories] = useState<ApplicationCategory[]>([]);
+  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
+  const [applicationStats, setApplicationStats] = useState({
+    pending: 0,
+    under_review: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0
+  });
 
   // Quick actions for beneficiaries
   const quickActions: QuickAction[] = [
@@ -54,10 +61,10 @@ export default function BeneficiaryHomeScreen() {
     },
     {
       id: '3',
-      title: 'Donation History',
+      title: 'Application History',
       icon: 'time',
       color: '#ff9800',
-      route: '/reports',
+      route: '/application-history',
     },
     {
       id: '4',
@@ -69,18 +76,30 @@ export default function BeneficiaryHomeScreen() {
   ];
 
   const loadBeneficiaryData = async () => {
-    // TODO: Replace with actual API call to get beneficiary-specific data
-    // const response = await apiService.getBeneficiaryDashboard(userData?.email);
-    
-    // Sample data - replace with actual API data
-    setTotalDonationsReceived(15750);
-    
-    setApplicationCategories([
-      { name: 'Food', count: 5, amount: 6500, color: '#4caf50' },
-      { name: 'Medicine', count: 3, amount: 4200, color: '#2196f3' },
-      { name: 'Education', count: 4, amount: 3050, color: '#ff9800' },
-      { name: 'Emergency', count: 2, amount: 2000, color: '#f44336' },
-    ]);
+    try {
+      if (!userData?.email) {
+        console.log('No user email available');
+        return;
+      }
+
+      // Fetch dashboard data from backend
+      const response = await apiService.getBeneficiaryDashboard(userData.email);
+      
+      if (response.success && response.data) {
+        setTotalDonationsReceived(response.data.totalDonationsReceived || 0);
+        setRecentActivities(response.data.recentActivities || []);
+        setApplicationStats(response.data.applicationStats || {
+          pending: 0,
+          under_review: 0,
+          approved: 0,
+          rejected: 0,
+          total: 0
+        });
+      }
+    } catch (err: any) {
+      console.error('Error loading beneficiary data:', err);
+      // Don't set error here, just log it
+    }
   };
 
   const loadDashboardData = async () => {
@@ -114,14 +133,17 @@ export default function BeneficiaryHomeScreen() {
     }
   };
 
-  // Prepare data for pie chart
-  const pieChartData = applicationCategories.map(category => ({
-    name: category.name,
-    amount: category.amount,
-    color: category.color,
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 12,
-  }));
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInSeconds = Math.floor((now.getTime() - time.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return time.toLocaleDateString();
+  };
 
   if (loading) {
     return <LoadingSpinner text="Loading your dashboard..." />;
@@ -170,67 +192,51 @@ export default function BeneficiaryHomeScreen() {
               <View style={styles.totalCardContent}>
                 <Text style={styles.totalCardLabel}>Total Donations Received</Text>
                 <Text style={styles.totalCardAmount}>
-                  ${totalDonationsReceived.toLocaleString()}
+                  LKR {totalDonationsReceived.toLocaleString()}
                 </Text>
               </View>
             </View>
             <Text style={styles.totalCardSubtext}>
-              Your total support across all applications
+              Your total support across all approved applications
             </Text>
           </View>
 
-          {/* Application Categories Pie Chart */}
-          <View style={styles.chartCard}>
-            <Text style={styles.sectionTitle}>Application Categories</Text>
-            <Text style={styles.sectionSubtitle}>
-              Breakdown of your applications by category
-            </Text>
-            
-            {pieChartData.length > 0 ? (
-              <View style={styles.chartContainer}>
-                <PieChart
-                  data={pieChartData}
-                  width={screenWidth - 60}
-                  height={220}
-                  chartConfig={{
-                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  }}
-                  accessor="amount"
-                  backgroundColor="transparent"
-                  paddingLeft="15"
-                  absolute
-                />
-                
-                {/* Category Summary */}
-                <View style={styles.categorySummary}>
-                  {applicationCategories.map((category, index) => (
-                    <View key={index} style={styles.categoryItem}>
-                      <View style={styles.categoryInfo}>
-                        <View 
-                          style={[
-                            styles.categoryDot, 
-                            { backgroundColor: category.color }
-                          ]} 
-                        />
-                        <Text style={styles.categoryName}>{category.name}</Text>
-                      </View>
-                      <View style={styles.categoryStats}>
-                        <Text style={styles.categoryCount}>{category.count} apps</Text>
-                        <Text style={styles.categoryAmount}>
-                          ${category.amount.toLocaleString()}
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
+          {/* Application Stats Card */}
+          <View style={styles.statsCard}>
+            <Text style={styles.sectionTitle}>Application Overview</Text>
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#4caf5020' }]}>
+                  <Ionicons name="checkmark-circle" size={28} color="#4caf50" />
                 </View>
+                <Text style={styles.statValue}>{applicationStats.approved}</Text>
+                <Text style={styles.statLabel}>Approved</Text>
               </View>
-            ) : (
-              <View style={styles.emptyChart}>
-                <Ionicons name="pie-chart-outline" size={64} color="#ccc" />
-                <Text style={styles.emptyChartText}>No applications yet</Text>
+              
+              <View style={styles.statItem}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#2196f320' }]}>
+                  <Ionicons name="eye" size={28} color="#2196f3" />
+                </View>
+                <Text style={styles.statValue}>{applicationStats.under_review}</Text>
+                <Text style={styles.statLabel}>Under Review</Text>
               </View>
-            )}
+              
+              <View style={styles.statItem}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#ff980020' }]}>
+                  <Ionicons name="time" size={28} color="#ff9800" />
+                </View>
+                <Text style={styles.statValue}>{applicationStats.pending}</Text>
+                <Text style={styles.statLabel}>Pending</Text>
+              </View>
+              
+              <View style={styles.statItem}>
+                <View style={[styles.statIconContainer, { backgroundColor: '#f4433620' }]}>
+                  <Ionicons name="close-circle" size={28} color="#f44336" />
+                </View>
+                <Text style={styles.statValue}>{applicationStats.rejected}</Text>
+                <Text style={styles.statLabel}>Rejected</Text>
+              </View>
+            </View>
           </View>
 
           {/* Quick Actions */}
@@ -258,45 +264,32 @@ export default function BeneficiaryHomeScreen() {
           <View style={styles.activityCard}>
             <View style={styles.activityHeader}>
               <Text style={styles.sectionTitle}>Recent Activity</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/beneficiary')}>
                 <Text style={styles.viewAllText}>View All</Text>
               </TouchableOpacity>
             </View>
             
-            {/* Sample activities */}
             <View style={styles.activityList}>
-              <View style={styles.activityItem}>
-                <View style={[styles.activityIcon, { backgroundColor: '#4caf5020' }]}>
-                  <Ionicons name="checkmark-circle" size={24} color="#4caf50" />
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity) => (
+                  <View key={activity.id} style={styles.activityItem}>
+                    <View style={[styles.activityIcon, { backgroundColor: activity.color + '20' }]}>
+                      <Ionicons name={activity.icon as any} size={24} color={activity.color} />
+                    </View>
+                    <View style={styles.activityContent}>
+                      <Text style={styles.activityTitle}>{activity.title}</Text>
+                      <Text style={styles.activitySubtitle}>{activity.subtitle}</Text>
+                      <Text style={styles.activityTime}>{formatTimeAgo(activity.timestamp)}</Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.emptyState}>
+                  <Ionicons name="document-text-outline" size={64} color="#ccc" />
+                  <Text style={styles.emptyStateText}>No recent activities</Text>
+                  <Text style={styles.emptyStateSubtext}>Your application updates will appear here</Text>
                 </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>Application Approved</Text>
-                  <Text style={styles.activitySubtitle}>Food assistance - $2,500</Text>
-                  <Text style={styles.activityTime}>2 hours ago</Text>
-                </View>
-              </View>
-
-              <View style={styles.activityItem}>
-                <View style={[styles.activityIcon, { backgroundColor: '#2196f320' }]}>
-                  <Ionicons name="time" size={24} color="#2196f3" />
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>Application Under Review</Text>
-                  <Text style={styles.activitySubtitle}>Medical assistance</Text>
-                  <Text style={styles.activityTime}>1 day ago</Text>
-                </View>
-              </View>
-
-              <View style={styles.activityItem}>
-                <View style={[styles.activityIcon, { backgroundColor: '#ff980020' }]}>
-                  <Ionicons name="document-text" size={24} color="#ff9800" />
-                </View>
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>New Application Submitted</Text>
-                  <Text style={styles.activitySubtitle}>Education support</Text>
-                  <Text style={styles.activityTime}>3 days ago</Text>
-                </View>
-              </View>
+              )}
             </View>
           </View>
 
@@ -419,7 +412,7 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 8,
   },
-  chartCard: {
+  statsCard: {
     backgroundColor: '#fff',
     marginHorizontal: 16,
     marginBottom: 16,
@@ -442,59 +435,38 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 16,
   },
-  chartContainer: {
-    alignItems: 'center',
-  },
-  categorySummary: {
-    width: '100%',
-    marginTop: 20,
-  },
-  categoryItem: {
+  statsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  statItem: {
+    width: '48%',
+    backgroundColor: '#fafafa',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
-  categoryInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  categoryDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  categoryName: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  categoryStats: {
-    alignItems: 'flex-end',
-  },
-  categoryCount: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 2,
-  },
-  categoryAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4caf50',
-  },
-  emptyChart: {
+  statIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
+    marginBottom: 12,
   },
-  emptyChartText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 12,
+  statValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
   },
   quickActionsCard: {
     backgroundColor: '#fff',
@@ -590,6 +562,22 @@ const styles = StyleSheet.create({
   activityTime: {
     fontSize: 12,
     color: '#999',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#999',
+    marginTop: 12,
+    fontWeight: '600',
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#bbb',
+    marginTop: 8,
   },
   tipsCard: {
     backgroundColor: '#fffbea',

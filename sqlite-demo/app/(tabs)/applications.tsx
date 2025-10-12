@@ -89,14 +89,12 @@ export default function ApplicationManagementScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Custom Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Smart Application Management</Text>
-          <View style={styles.aiPrioritizedBadge}>
-            <Ionicons name="sparkles" size={14} color="#4fc3f7" />
-            <Text style={styles.aiPrioritizedText}>AI Prioritized</Text>
-          </View>
+        <Text style={styles.headerTitle}>Application Management</Text>
+        <View style={styles.aiPrioritizedBadge}>
+          <Ionicons name="sparkles" size={14} color="#fff" />
+          <Text style={styles.aiPrioritizedText}>AI Prioritized</Text>
         </View>
       </View>
 
@@ -143,7 +141,7 @@ export default function ApplicationManagementScreen() {
                 </View>
 
                 {/* Project Title */}
-                <Text style={styles.projectTitle}>{application.project_title || 'No Project'}</Text>
+                <Text style={styles.projectTitle}>{application.title || 'No Title'}</Text>
 
                 {/* Details */}
                 <Text style={styles.needsDetail} numberOfLines={2}>
@@ -191,7 +189,7 @@ export default function ApplicationManagementScreen() {
                   </View>
                 </View>
 
-                <Text style={styles.projectTitle}>{application.project_title || 'No Project'}</Text>
+                <Text style={styles.projectTitle}>{application.title || 'No Title'}</Text>
                 <Text style={styles.needsDetail} numberOfLines={2}>
                   {application.description}
                 </Text>
@@ -221,7 +219,7 @@ export default function ApplicationManagementScreen() {
                   </View>
                 </View>
 
-                <Text style={styles.projectTitle}>{application.project_title || 'No Project'}</Text>
+                <Text style={styles.projectTitle}>{application.title || 'No Title'}</Text>
                 <Text style={styles.needsDetail} numberOfLines={2}>
                   {application.description}
                 </Text>
@@ -263,18 +261,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fdff'
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#4fc3f7',
+    paddingTop: 50,
+    paddingBottom: 25,
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    marginBottom: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    color: '#fff',
+    marginBottom: 6,
   },
   aiPrioritizedBadge: {
     flexDirection: 'row',
@@ -282,17 +284,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   aiPrioritizedText: {
-    fontSize: 12,
-    color: '#4fc3f7',
-    fontWeight: '600',
+    fontSize: 14,
+    color: '#fff',
+    opacity: 0.95,
+    marginLeft: 4,
   },
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
     gap: 12,
   },
   statCard: {

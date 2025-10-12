@@ -201,13 +201,13 @@ export default function ApplicationDetailsModal({
                 </View>
 
                 {/* Amount Requested */}
-                {application.amount_requested && (
+                {application.target_amount && (
                   <View style={styles.infoSection}>
                     <View style={styles.infoRow}>
                       <Ionicons name="cash-outline" size={20} color="#666" />
-                      <Text style={styles.infoLabel}>Amount Requested</Text>
+                      <Text style={styles.infoLabel}>Target Amount</Text>
                     </View>
-                    <Text style={styles.infoValue}>${application.amount_requested.toLocaleString()}</Text>
+                    <Text style={styles.infoValue}>${application.target_amount.toLocaleString()}</Text>
                   </View>
                 )}
 

@@ -49,6 +49,7 @@ const getProjectById = (req, res) => {
 // Create new project
 const createProject = (req, res) => {
   const { 
+    application_id,
     name, 
     title, 
     description, 
@@ -63,10 +64,17 @@ const createProject = (req, res) => {
   // Support both 'name' and 'title' for backwards compatibility
   const projectTitle = title || name;
 
-  if (!projectTitle || !description || !target_amount) {
+  if (!application_id) {
     return res.status(400).json({
       success: false,
-      message: 'Title/name, description, and target amount are required'
+      message: 'Application ID is required to create a project'
+    });
+  }
+
+  if (!projectTitle || !description || !target_amount || !location) {
+    return res.status(400).json({
+      success: false,
+      message: 'Title/name, description, target amount, and location are required'
     });
   }
 
@@ -78,11 +86,12 @@ const createProject = (req, res) => {
   }
 
   const projectData = {
+    application_id,
     title: projectTitle,
     description,
     category: category || 'General',
     target_amount: parseFloat(target_amount),
-    location: location || null,
+    location,
     image_url: image_url || null,
     start_date: start_date || null,
     end_date: end_date || null,
@@ -91,6 +100,13 @@ const createProject = (req, res) => {
 
   Project.create(projectData, (err, result) => {
     if (err) {
+      // Check if it's a unique constraint error (application already has a project)
+      if (err.message && err.message.includes('UNIQUE constraint failed')) {
+        return res.status(400).json({
+          success: false,
+          message: 'A project already exists for this application'
+        });
+      }
       return res.status(500).json({
         success: false,
         message: 'Error creating project',

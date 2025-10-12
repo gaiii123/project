@@ -6,12 +6,16 @@ export default function BeneficiaryTabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#4fc3f7' },
-        headerTintColor: '#fff',
+        headerShown: false,
         tabBarActiveTintColor: '#0288d1',
         tabBarInactiveTintColor: '#757575',
-        tabBarStyle: { paddingBottom: 4, paddingTop: 5, height: 80 },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarStyle: { 
+          paddingBottom: 15, 
+          paddingTop: 5, 
+          height: 65,
+          marginBottom: 35,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         tabBarShowLabel: true,
       }}
     >
@@ -34,7 +38,7 @@ export default function BeneficiaryTabLayout() {
         }} 
       />
       <Tabs.Screen 
-        name="reports" 
+        name="application-history" 
         options={{ 
           title: 'History',
           tabBarIcon: ({ color, size }) => (
@@ -43,6 +47,12 @@ export default function BeneficiaryTabLayout() {
         }} 
       />
       {/* Hide tabs that are not relevant for beneficiaries */}
+      <Tabs.Screen 
+        name="reports" 
+        options={{ 
+          href: null,
+        }} 
+      />
       <Tabs.Screen 
         name="home" 
         options={{ 
@@ -63,6 +73,30 @@ export default function BeneficiaryTabLayout() {
       />
       <Tabs.Screen 
         name="applications" 
+        options={{ 
+          href: null,
+        }} 
+      />
+      <Tabs.Screen 
+        name="donor-home" 
+        options={{ 
+          href: null,
+        }} 
+      />
+      <Tabs.Screen 
+        name="donor-projects" 
+        options={{ 
+          href: null,
+        }} 
+      />
+      <Tabs.Screen 
+        name="donor-impact" 
+        options={{ 
+          href: null,
+        }} 
+      />
+      <Tabs.Screen 
+        name="donor-updates" 
         options={{ 
           href: null,
         }} 
