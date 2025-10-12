@@ -1,16 +1,19 @@
 // app/(tabs)/beneficiary.tsx
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, Switch } from "react-native";
 import { useState, useEffect } from "react";
-import { apiService } from "../services/api";
-import { Beneficiary } from "../services/types";
+import { apiService } from '../../services/api';
+import { Beneficiary } from '../../services/types';
 import LoadingSpinner from "../../components/loadingSpinner";
 import ErrorMessage from "../../components/errorMessage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function BeneficiaryScreen() {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [showOnlyMine, setShowOnlyMine] = useState(false);
   
   const [form, setForm] = useState({
     name: "",
@@ -21,19 +24,46 @@ export default function BeneficiaryScreen() {
   });
 
   useEffect(() => {
-    loadBeneficiaries();
+    loadUserData();
   }, []);
 
   const loadBeneficiaries = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiService.getBeneficiaries();
+      
+      let response;
+      if (showOnlyMine && userEmail) {
+        response = await apiService.getBeneficiariesByEmail(userEmail);
+      } else {
+        response = await apiService.getBeneficiaries();
+      }
+      
       setBeneficiaries(response.data);
     } catch (err: any) {
       setError(err.message || 'Failed to load beneficiaries');
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userEmail) {
+      loadBeneficiaries();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showOnlyMine, userEmail]);
+
+  const loadUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setUserEmail(user.email || "");
+        setForm(prev => ({ ...prev, email: user.email || "", name: user.name || "" }));
+      }
+    } catch (err) {
+      console.error('Error loading user data:', err);
     }
   };
 
@@ -63,7 +93,7 @@ export default function BeneficiaryScreen() {
     }
   };
 
-  const getStatusColor = (status: string | undefined) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved': return '#4caf50';
       case 'rejected': return '#f44336';
@@ -80,7 +110,7 @@ export default function BeneficiaryScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Beneficiary Application</Text>
       <Text style={styles.description}>
-        Apply for aid and track your application status. We are here to help.
+        Apply for aid and track your application status. We&apos;re here to help.
       </Text>
       
       {/* Application Form */}
@@ -137,23 +167,34 @@ export default function BeneficiaryScreen() {
 
       {/* Applications List */}
       <View style={styles.listSection}>
-        <Text style={styles.sectionTitle}>Your Applications</Text>
+        <View style={styles.listHeader}>
+          <Text style={styles.sectionTitle}>Applications</Text>
+          <View style={styles.filterContainer}>
+            <Text style={styles.filterText}>My Applications Only</Text>
+            <Switch
+              value={showOnlyMine}
+              onValueChange={setShowOnlyMine}
+              trackColor={{ false: '#767577', true: '#4fc3f7' }}
+              thumbColor={showOnlyMine ? '#2196f3' : '#f4f3f4'}
+            />
+          </View>
+        </View>
         
         {error && (
           <ErrorMessage message={error} onRetry={loadBeneficiaries} />
         )}
 
         {beneficiaries.length === 0 ? (
-          <Text style={styles.noDataText}>No applications submitted yet.</Text>
+          <Text style={styles.noDataText}>
+            {showOnlyMine ? 'You have not submitted any applications yet.' : 'No applications found.'}
+          </Text>
         ) : (
           beneficiaries.map((beneficiary) => (
             <View key={beneficiary.id} style={styles.beneficiaryItem}>
               <View style={styles.beneficiaryHeader}>
                 <Text style={styles.beneficiaryName}>{beneficiary.name}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(beneficiary.status) }]}>
-                  <Text style={styles.statusText}>
-                    {(beneficiary.status || 'pending').toUpperCase()}
-                  </Text>
+                  <Text style={styles.statusText}>{beneficiary.status.toUpperCase()}</Text>
                 </View>
               </View>
               <Text style={styles.beneficiaryEmail}>{beneficiary.email}</Text>
@@ -202,10 +243,24 @@ const styles = StyleSheet.create({
   listSection: {
     marginBottom: 20
   },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  filterText: {
+    fontSize: 14,
+    color: '#666'
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 15,
     color: '#333'
   },
   input: { 
