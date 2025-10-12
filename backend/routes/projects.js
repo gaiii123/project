@@ -9,11 +9,15 @@ const {
   updateProjectProgress,
   getProjectProgress,
   updateProject,
-  deleteProject
+  deleteProject,
+  getTrendingProjects
 } = require('../controllers/projectController');
 
 // GET /api/projects - Get all projects
 router.get('/', getAllProjects);
+
+// GET /api/projects/trending - Get trending projects (highest goal amount)
+router.get('/trending', getTrendingProjects);
 
 // GET /api/projects/progress - Get project progress
 router.get('/progress', getProjectProgress);

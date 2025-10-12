@@ -94,6 +94,8 @@ const getImpactSummary = (req, res) => {
       });
     }
 
+    console.log('Impact Summary from DB:', summary);
+
     res.json({
       success: true,
       data: summary || {
@@ -106,9 +108,70 @@ const getImpactSummary = (req, res) => {
   });
 };
 
+// Debug endpoint to check database content
+const debugDatabase = (req, res) => {
+  const { db } = require('../config/database');
+  
+  db.get('SELECT COUNT(*) as count FROM projects', [], (err, projectCount) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    db.all('SELECT id, title, status FROM projects LIMIT 5', [], (err, projects) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      db.get('SELECT COUNT(*) as count FROM users WHERE role = "beneficiary"', [], (err, beneficiaryCount) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        
+        res.json({
+          success: true,
+          debug: {
+            totalProjects: projectCount.count,
+            sampleProjects: projects,
+            totalBeneficiaries: beneficiaryCount.count
+          }
+        });
+      });
+    });
+  });
+};
+
+// Get donor impact dashboard
+const getDonorImpact = (req, res) => {
+  const { donorId } = req.params;
+
+  if (!donorId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Donor ID is required'
+    });
+  }
+
+  Impact.getDonorImpact(donorId, (err, impactData) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error fetching donor impact data',
+        error: err.message
+      });
+    }
+
+    res.json({
+      success: true,
+      data: impactData
+    });
+  });
+};
+
 module.exports = {
   getAllImpactRecords,
   getImpactRecordById,
   createImpactRecord,
-  getImpactSummary
+  getImpactSummary,
+  getDonorImpact,
+  debugDatabase
 };

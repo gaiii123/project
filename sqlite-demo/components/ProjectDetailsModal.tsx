@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
-import { Project } from '../app/services/types';
-import { apiService } from '../app/services/api';
+import { Project } from '../services/types';
+import { apiService } from '../services/api';
 
 interface ProjectDetailsModalProps {
   visible: boolean;

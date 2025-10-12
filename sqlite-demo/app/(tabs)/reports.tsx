@@ -4,54 +4,11 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const ReportCard = ({ 
-  title, 
-  description, 
-  onDownload 
-}: { 
-  title: string; 
-  description: string; 
-  onDownload: () => void;
-}) => {
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardDescription}>{description}</Text>
-      </View>
-      <TouchableOpacity 
-        style={styles.downloadButton}
-        onPress={onDownload}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="download-outline" size={18} color="#fff" />
-        <Text style={styles.downloadButtonText}>Download PDF</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
 export default function ReportsScreen() {
-  const handleDownloadMonthlySummary = () => {
-    console.log('Downloading Monthly Summary Report...');
-    // TODO: Implement PDF generation and download
-  };
-
-  const handleDownloadDonorImpact = () => {
-    console.log('Downloading Donor Impact Report...');
-    // TODO: Implement PDF generation and download
-  };
-
-  const handleDownloadFinancialSummary = () => {
-    console.log('Downloading Financial Summary...');
-    // TODO: Implement PDF generation and download
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView 
@@ -60,27 +17,39 @@ export default function ReportsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Generate Reports</Text>
+          <Text style={styles.title}>Reports</Text>
+          <Text style={styles.subtitle}>
+            View detailed analytics and reports
+          </Text>
         </View>
 
-        <View style={styles.reportsContainer}>
-          <ReportCard
-            title="Monthly Summary Report"
-            description="Comprehensive overview of donations, projects, and impact for the current month"
-            onDownload={handleDownloadMonthlySummary}
-          />
-
-          <ReportCard
-            title="Donor Impact Report"
-            description="Detailed report showing how donations have been utilized and their impact"
-            onDownload={handleDownloadDonorImpact}
-          />
-
-          <ReportCard
-            title="Financial Summary"
-            description="Financial breakdown of all donations and expenditures"
-            onDownload={handleDownloadFinancialSummary}
-          />
+        <View style={styles.contentContainer}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="analytics-outline" size={80} color="#0288d1" />
+          </View>
+          <Text style={styles.mainText}>Reports Dashboard</Text>
+          <Text style={styles.descriptionText}>
+            This section will contain detailed reports, analytics, and insights about donations, projects, and impact metrics.
+          </Text>
+          
+          <View style={styles.featureList}>
+            <View style={styles.featureItem}>
+              <Ionicons name="bar-chart-outline" size={24} color="#0288d1" />
+              <Text style={styles.featureText}>Financial Reports</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="pie-chart-outline" size={24} color="#0288d1" />
+              <Text style={styles.featureText}>Impact Analytics</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="trending-up-outline" size={24} color="#0288d1" />
+              <Text style={styles.featureText}>Growth Metrics</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="document-text-outline" size={24} color="#0288d1" />
+              <Text style={styles.featureText}>Custom Reports</Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -100,7 +69,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   title: {
     fontSize: 28,
@@ -108,51 +77,59 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     marginBottom: 8,
   },
-  reportsContainer: {
-    gap: 16,
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    lineHeight: 22,
   },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
+  contentContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#e8e8e8',
+    elevation: 4,
   },
-  cardContent: {
-    marginBottom: 16,
+  iconContainer: {
+    marginBottom: 24,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  mainText: {
+    fontSize: 24,
+    fontWeight: '700',
     color: '#1a1a1a',
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: 'center',
   },
-  cardDescription: {
-    fontSize: 14,
+  descriptionText: {
+    fontSize: 15,
     color: '#666',
-    lineHeight: 20,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
   },
-  downloadButton: {
-    backgroundColor: '#000',
+  featureList: {
+    width: '100%',
+    gap: 16,
+  },
+  featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    gap: 8,
+    gap: 16,
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
   },
-  downloadButtonText: {
-    color: '#fff',
-    fontSize: 15,
+  featureText: {
+    fontSize: 16,
     fontWeight: '600',
+    color: '#1a1a1a',
   },
 });

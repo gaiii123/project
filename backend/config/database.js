@@ -114,24 +114,18 @@ const initDatabase = async () => {
           )
         `);
 
-        // Donations table (Donors donate to APPROVED Applications)
+        // Donations table (Donors donate to Projects)
         db.run(`
           CREATE TABLE donations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            application_id INTEGER NOT NULL,
             project_id INTEGER NOT NULL,
             donor_id INTEGER NOT NULL,
-            item_name TEXT NOT NULL,
-            quantity INTEGER DEFAULT 1,
             amount REAL NOT NULL,
-            donation_type TEXT DEFAULT 'monetary' CHECK(donation_type IN ('monetary', 'in-kind')),
-            photo_url TEXT,
-            notes TEXT,
-            donation_date DATE NOT NULL,
-            status TEXT DEFAULT 'completed' CHECK(status IN ('completed', 'pending', 'cancelled')),
+            currency TEXT DEFAULT 'LKR',
+            purpose TEXT,
+            status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'failed')),
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (application_id) REFERENCES aid_applications(id) ON DELETE CASCADE,
             FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
             FOREIGN KEY (donor_id) REFERENCES users(id) ON DELETE CASCADE
           )
@@ -183,6 +177,24 @@ const initDatabase = async () => {
           )
         `);
 
+        // Impact Tracking table (Tracks impact of projects and donations)
+        db.run(`
+          CREATE TABLE impact_tracking (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER,
+            beneficiary_id INTEGER,
+            donation_id INTEGER,
+            impact_description TEXT NOT NULL,
+            amount_used REAL,
+            status_update TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
+            FOREIGN KEY (beneficiary_id) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (donation_id) REFERENCES donations(id) ON DELETE SET NULL
+          )
+        `);
+
         // Create indexes for performance
         db.run('CREATE INDEX idx_donations_application ON donations(application_id)');
         db.run('CREATE INDEX idx_donations_donor ON donations(donor_id)');
@@ -192,6 +204,9 @@ const initDatabase = async () => {
         db.run('CREATE INDEX idx_applications_status ON aid_applications(status)');
         db.run('CREATE INDEX idx_projects_status ON projects(status)');
         db.run('CREATE INDEX idx_users_role ON users(role)');
+        db.run('CREATE INDEX idx_impact_project ON impact_tracking(project_id)');
+        db.run('CREATE INDEX idx_impact_beneficiary ON impact_tracking(beneficiary_id)');
+        db.run('CREATE INDEX idx_impact_donation ON impact_tracking(donation_id)');
 
         console.log('✅ Database tables created successfully!');
         resolve();

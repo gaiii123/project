@@ -48,12 +48,12 @@ const getDonationById = (req, res) => {
 
 // Create new donation
 const createDonation = (req, res) => {
-  const { donor_name, donor_email, amount, currency, purpose } = req.body;
+  const { project_id, donor_id, amount, currency, purpose } = req.body;
 
-  if (!donor_name || !donor_email || !amount) {
+  if (!project_id || !donor_id || !amount) {
     return res.status(400).json({
       success: false,
-      message: 'Donor name, email, and amount are required'
+      message: 'Project ID, Donor ID, and amount are required'
     });
   }
 
@@ -65,10 +65,10 @@ const createDonation = (req, res) => {
   }
 
   const donationData = {
-    donor_name,
-    donor_email,
+    project_id: parseInt(project_id),
+    donor_id: parseInt(donor_id),
     amount: parseFloat(amount),
-    currency: currency || 'USD',
+    currency: currency || 'LKR',
     purpose: purpose || ''
   };
 
@@ -85,6 +85,26 @@ const createDonation = (req, res) => {
       success: true,
       message: 'Donation submitted successfully',
       data: result
+    });
+  });
+};
+
+// Get donations by donor ID
+const getDonationsByDonor = (req, res) => {
+  const { donorId } = req.params;
+
+  Donation.findByDonor(donorId, (err, donations) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error fetching donor donations',
+        error: err.message
+      });
+    }
+    res.json({
+      success: true,
+      data: donations || [],
+      count: donations?.length || 0
     });
   });
 };
@@ -153,6 +173,7 @@ module.exports = {
   getAllDonations,
   getDonationById,
   createDonation,
+  getDonationsByDonor,
   updateDonationStatus,
   getDonationStats
 };

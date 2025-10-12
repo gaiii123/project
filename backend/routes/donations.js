@@ -6,6 +6,7 @@ const {
   getAllDonations,
   getDonationById,
   createDonation,
+  getDonationsByDonor,
   updateDonationStatus,
   getDonationStats
 } = require('../controllers/donationController');
@@ -15,6 +16,9 @@ router.get('/', getAllDonations);
 
 // GET /api/donations/stats - Get donation statistics
 router.get('/stats', getDonationStats);
+
+// GET /api/donations/donor/:donorId - Get donations by donor
+router.get('/donor/:donorId', getDonationsByDonor);
 
 // GET /api/donations/:id - Get donation by ID
 router.get('/:id', getDonationById);

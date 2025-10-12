@@ -4,30 +4,71 @@ const { db } = require('../config/database');
 class Project {
   // Create new project
   static create(projectData, callback) {
-    const { name, description, target_amount } = projectData;
-    const sql = `INSERT INTO projects (name, description, target_amount) 
-                 VALUES (?, ?, ?)`;
+    const { 
+      title, 
+      description, 
+      category, 
+      target_amount, 
+      location, 
+      image_url, 
+      start_date, 
+      end_date, 
+      created_by 
+    } = projectData;
     
-    db.run(sql, [name, description, target_amount], function(err) {
+    const sql = `INSERT INTO projects (
+      title, description, category, target_amount, location, 
+      image_url, start_date, end_date, created_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    
+    db.run(sql, [
+      title, 
+      description, 
+      category || 'General', 
+      target_amount, 
+      location, 
+      image_url, 
+      start_date, 
+      end_date, 
+      created_by || 1
+    ], function(err) {
       callback(err, { id: this.lastID, ...projectData });
     });
   }
 
-  // Get all projects
+  // Get all projects with creator info
   static findAll(callback) {
-    const sql = 'SELECT * FROM projects ORDER BY created_at DESC';
+    const sql = `
+      SELECT 
+        p.*,
+        p.title as name,
+        p.current_amount as collected_amount,
+        u.name as creator_name
+      FROM projects p
+      LEFT JOIN users u ON p.created_by = u.id
+      ORDER BY p.created_at DESC
+    `;
     db.all(sql, [], callback);
   }
 
   // Get project by ID
   static findById(id, callback) {
-    const sql = 'SELECT * FROM projects WHERE id = ?';
+    const sql = `
+      SELECT 
+        p.*,
+        p.title as name,
+        p.current_amount as collected_amount,
+        u.name as creator_name
+      FROM projects p
+      LEFT JOIN users u ON p.created_by = u.id
+      WHERE p.id = ?
+    `;
     db.get(sql, [id], callback);
   }
 
-  // Update project collected amount
+  // Update project current amount
   static updateCollectedAmount(id, amount, callback) {
-    const sql = 'UPDATE projects SET collected_amount = collected_amount + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+    const sql = 'UPDATE projects SET current_amount = current_amount + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
     db.run(sql, [amount, id], callback);
   }
 
@@ -39,11 +80,12 @@ class Project {
 
   // Update project details
   static update(id, projectData, callback) {
-    const { name, description, target_amount } = projectData;
+    const { title, description, category, target_amount, location, image_url } = projectData;
     const sql = `UPDATE projects 
-                 SET name = ?, description = ?, target_amount = ?, updated_at = CURRENT_TIMESTAMP 
+                 SET title = ?, description = ?, category = ?, target_amount = ?, 
+                     location = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP 
                  WHERE id = ?`;
-    db.run(sql, [name, description, target_amount, id], callback);
+    db.run(sql, [title, description, category, target_amount, location, image_url, id], callback);
   }
 
   // Delete project
@@ -57,14 +99,36 @@ class Project {
     const sql = `
       SELECT 
         id,
-        name,
+        title as name,
         target_amount,
-        collected_amount,
-        (collected_amount / target_amount) * 100 as progress_percentage
+        current_amount as collected_amount,
+        (CAST(current_amount AS REAL) / target_amount) * 100 as progress_percentage
       FROM projects 
       WHERE status = 'active'
     `;
     db.all(sql, [], callback);
+  }
+
+  // Get trending projects (highest target_amount, most popular)
+  static findTrending(limit = 5, callback) {
+    const sql = `
+      SELECT 
+        p.*,
+        p.title as name,
+        p.current_amount as collected_amount,
+        u.name as creator_name,
+        (CAST(p.current_amount AS REAL) / p.target_amount) * 100 as progress_percentage,
+        CASE 
+          WHEN p.current_amount >= p.target_amount THEN 'completed'
+          ELSE 'active'
+        END as funding_status
+      FROM projects p
+      LEFT JOIN users u ON p.created_by = u.id
+      WHERE p.status = 'active'
+      ORDER BY p.target_amount DESC, p.current_amount DESC
+      LIMIT ?
+    `;
+    db.all(sql, [limit], callback);
   }
 }
 

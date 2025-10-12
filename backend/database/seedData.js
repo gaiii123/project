@@ -141,49 +141,55 @@ async function seedDatabase() {
       );
       insertApplications.finalize();
 
-      // 4. Insert Donations (Donors donate to APPROVED applications)
+      // 4. Insert Donations (Donors donate to Projects directly)
       const insertDonations = db.prepare(`
-        INSERT INTO donations (application_id, project_id, donor_id, item_name, quantity, amount, donation_type, notes, donation_date, status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO donations (project_id, donor_id, amount, currency, purpose, status) 
+        VALUES (?, ?, ?, ?, ?, ?)
       `);
 
       insertDonations.run(
         1,
-        1,
         2,
-        'School Supply Package',
-        3,
         450,
-        'monetary',
-        'For Mary\'s children school supplies',
-        '2025-10-06',
+        'LKR',
+        'For school supplies in rural areas',
         'completed'
       );
 
       insertDonations.run(
-        3,
         1,
         3,
-        'Educational Books',
-        1,
         200,
-        'in-kind',
-        'Books for homeschooling',
-        '2025-10-09',
+        'LKR',
+        'Educational books donation',
+        'completed'
+      );
+
+      insertDonations.run(
+        2,
+        2,
+        1000,
+        'LKR',
+        'Medical aid for families in need',
         'completed'
       );
 
       insertDonations.run(
         1,
-        1,
         3,
-        'Additional Supplies',
-        1,
         150,
-        'monetary',
-        'Extra donation for school supplies',
-        '2025-10-10',
+        'LKR',
+        'Additional school supplies',
         'completed'
+      );
+
+      insertDonations.run(
+        3,
+        2,
+        500,
+        'LKR',
+        'Clean water initiative support',
+        'pending'
       );
       insertDonations.finalize();
 

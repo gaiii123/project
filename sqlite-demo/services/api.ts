@@ -1,12 +1,14 @@
 // services/api.ts
 import { 
   Beneficiary, 
+  Application,
   Donation, 
   Project, 
   ImpactRecord, 
   DonationStats, 
   ImpactSummary,
   BeneficiaryDashboardData,
+  DonorImpactData,
   ApiResponse 
 } from './types';
 
@@ -116,6 +118,10 @@ class ApiService {
     return this.fetchWithErrorHandling<Beneficiary[]>('/beneficiaries');
   }
 
+  async getBeneficiariesByEmail(email: string): Promise<ApiResponse<Beneficiary[]>> {
+    return this.fetchWithErrorHandling<Beneficiary[]>(`/beneficiaries/email/${email}`);
+  }
+
   async updateBeneficiaryStatus(id: number, status: string): Promise<ApiResponse<void>> {
     return this.fetchWithErrorHandling<void>(`/beneficiaries/${id}/status`, {
       method: 'PUT',
@@ -124,7 +130,7 @@ class ApiService {
   }
 
   // Donation endpoints
-  async createDonation(donationData: Omit<Donation, 'id' | 'created_at' | 'updated_at' | 'status'>): Promise<ApiResponse<Donation>> {
+  async createDonation(donationData: Omit<Donation, 'id' | 'created_at' | 'updated_at' | 'status' | 'donor_name' | 'donor_email' | 'project_title' | 'project_category'>): Promise<ApiResponse<Donation>> {
     return this.fetchWithErrorHandling<Donation>('/donations', {
       method: 'POST',
       body: JSON.stringify(donationData),
@@ -135,6 +141,10 @@ class ApiService {
     return this.fetchWithErrorHandling<Donation[]>('/donations');
   }
 
+  async getDonationsByDonor(donorId: number): Promise<ApiResponse<Donation[]>> {
+    return this.fetchWithErrorHandling<Donation[]>(`/donations/donor/${donorId}`);
+  }
+
   async getDonationStats(): Promise<ApiResponse<DonationStats>> {
     return this.fetchWithErrorHandling<DonationStats>('/donations/stats');
   }
@@ -142,6 +152,10 @@ class ApiService {
   // Project endpoints
   async getProjects(): Promise<ApiResponse<Project[]>> {
     return this.fetchWithErrorHandling<Project[]>('/projects');
+  }
+
+  async getTrendingProjects(limit: number = 5): Promise<ApiResponse<Project[]>> {
+    return this.fetchWithErrorHandling<Project[]>(`/projects/trending?limit=${limit}`);
   }
 
   async getProjectProgress(): Promise<ApiResponse<Project[]>> {
@@ -177,6 +191,10 @@ class ApiService {
     return this.fetchWithErrorHandling<ImpactSummary>('/impact/summary');
   }
 
+  async getDonorImpact(donorId: number): Promise<ApiResponse<DonorImpactData>> {
+    return this.fetchWithErrorHandling<DonorImpactData>(`/impact/donor/${donorId}`);
+  }
+
   async createImpactRecord(impactData: Omit<ImpactRecord, 'id' | 'created_at'>): Promise<ApiResponse<ImpactRecord>> {
     return this.fetchWithErrorHandling<ImpactRecord>('/impact', {
       method: 'POST',
@@ -187,6 +205,59 @@ class ApiService {
   // Beneficiary dashboard endpoint
   async getBeneficiaryDashboard(email: string): Promise<ApiResponse<BeneficiaryDashboardData>> {
     return this.fetchWithErrorHandling<BeneficiaryDashboardData>(`/beneficiaries/dashboard/${email}`);
+  }
+
+  // Application endpoints
+  async getApplications(): Promise<ApiResponse<Application[]>> {
+    return this.fetchWithErrorHandling<Application[]>('/applications');
+  }
+
+  async getApplicationById(id: number): Promise<ApiResponse<Application>> {
+    return this.fetchWithErrorHandling<Application>(`/applications/${id}`);
+  }
+
+  async getApplicationsByBeneficiary(beneficiaryId: number): Promise<ApiResponse<Application[]>> {
+    return this.fetchWithErrorHandling<Application[]>(`/applications/beneficiary/${beneficiaryId}`);
+  }
+
+  async getApplicationsByStatus(status: string): Promise<ApiResponse<Application[]>> {
+    return this.fetchWithErrorHandling<Application[]>(`/applications/status/${status}`);
+  }
+
+  async createApplication(applicationData: Omit<Application, 'id' | 'created_at' | 'updated_at' | 'status' | 'reviewed_by' | 'review_notes' | 'reviewed_at'>): Promise<ApiResponse<Application>> {
+    return this.fetchWithErrorHandling<Application>('/applications', {
+      method: 'POST',
+      body: JSON.stringify(applicationData),
+    });
+  }
+
+  async updateApplicationStatus(id: number, status: string, reviewed_by?: number, review_notes?: string): Promise<ApiResponse<void>> {
+    return this.fetchWithErrorHandling<void>(`/applications/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, reviewed_by, review_notes }),
+    });
+  }
+
+  async updateApplication(id: number, applicationData: Partial<Omit<Application, 'id' | 'created_at' | 'updated_at' | 'status' | 'reviewed_by' | 'review_notes' | 'reviewed_at'>>): Promise<ApiResponse<Application>> {
+    return this.fetchWithErrorHandling<Application>(`/applications/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(applicationData),
+    });
+  }
+
+  async deleteApplication(id: number): Promise<ApiResponse<void>> {
+    return this.fetchWithErrorHandling<void>(`/applications/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getApplicationStats(): Promise<ApiResponse<any>> {
+    return this.fetchWithErrorHandling<any>('/applications/stats');
+  }
+
+  // Debug endpoint
+  async getDebugInfo(): Promise<ApiResponse<any>> {
+    return this.fetchWithErrorHandling<any>('/impact/debug');
   }
 }
 

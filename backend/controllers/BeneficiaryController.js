@@ -137,10 +137,67 @@ const deleteBeneficiary = (req, res) => {
   });
 };
 
+// Get beneficiaries by email (for user-specific view)
+const getBeneficiariesByEmail = (req, res) => {
+  const { email } = req.params;
+  
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email is required'
+    });
+  }
+
+  Beneficiary.findByEmail(email, (err, beneficiaries) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error fetching beneficiaries',
+        error: err.message
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: beneficiaries,
+      count: beneficiaries.length
+    });
+  });
+};
+
+// Get beneficiary dashboard data
+const getBeneficiaryDashboard = (req, res) => {
+  const { email } = req.params;
+  
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email is required'
+    });
+  }
+
+  Beneficiary.getDashboardData(email, (err, dashboardData) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error fetching dashboard data',
+        error: err.message
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: dashboardData
+    });
+  });
+};
+
 module.exports = {
   getAllBeneficiaries,
   getBeneficiaryById,
   createBeneficiary,
   updateBeneficiaryStatus,
-  deleteBeneficiary
+  deleteBeneficiary,
+  getBeneficiariesByEmail,
+  getBeneficiaryDashboard
 };

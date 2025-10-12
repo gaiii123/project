@@ -106,7 +106,7 @@ export default function Sidebar({
   const menuItems = [
     { icon: '🏠', label: 'Home', route: '/(tabs)/home' },
     { icon: '🏢', label: 'NGO Admin Portal', route: '/(tabs)/admin' },
-    { icon: '💝', label: 'Make a Donation', route: '/(tabs)/donor' },
+    { icon: '💝', label: 'AI Insights', route: '/(tabs)/ai-insights' },
     { icon: '📊', label: 'Track Impact', route: '/(tabs)/tracker' },
     { icon: '⚙️', label: 'Settings', route: '/(tabs)/home' },
   ];

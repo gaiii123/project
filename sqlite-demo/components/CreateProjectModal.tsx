@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
-import { apiService } from '../app/services/api';
+import { apiService } from '../services/api';
 
 interface CreateProjectModalProps {
   visible: boolean;
