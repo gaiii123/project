@@ -13,6 +13,7 @@ const beneficiaryRoutes = require('./routes/beneficiaries');
 const donationRoutes = require('./routes/donations');
 const projectRoutes = require('./routes/projects');
 const impactRoutes = require('./routes/impact');
+const applicationRoutes = require('./routes/applications');
 
 const app = express();
 const PORT = 5000;
@@ -46,6 +47,7 @@ app.use('/api/beneficiaries', beneficiaryRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/impact', impactRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

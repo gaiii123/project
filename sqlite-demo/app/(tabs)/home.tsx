@@ -1,8 +1,8 @@
 // app/(tabs)/home.tsx
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useState, useEffect } from 'react';
-import { apiService } from '../services/api';
-import { DonationStats, ImpactSummary } from '../services/types';
+import { apiService } from '../../services/api';
+import { DonationStats, ImpactSummary } from '../../services/types';
 import LoadingSpinner from '../../components/loadingSpinner';
 import ErrorMessage from '../../components/errorMessage';
 import Sidebar from '../../components/SideBar';
@@ -68,10 +68,18 @@ export default function HomeScreen() {
       setLoading(true);
       setError(null);
       
+      // Debug: Check what's in the database
+      const debugResponse = await apiService.getDebugInfo();
+      console.log('=== DATABASE DEBUG INFO ===');
+      console.log('Debug Info:', debugResponse.data);
+      
       const [statsResponse, impactResponse] = await Promise.all([
         apiService.getDonationStats(),
         apiService.getImpactSummary()
       ]);
+
+      console.log('Donation Stats:', statsResponse.data);
+      console.log('Impact Summary:', impactResponse.data);
 
       setDonationStats(statsResponse.data);
       setImpactSummary(impactResponse.data);

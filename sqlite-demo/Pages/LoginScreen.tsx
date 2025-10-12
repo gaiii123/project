@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { apiService } from '../app/services/api';
+import { apiService } from '../services/api';
 import Toast from 'react-native-toast-message';
 
 export default function LoginScreen() {
@@ -66,6 +66,8 @@ export default function LoginScreen() {
         setTimeout(() => {
           if (response.data.user.role === 'beneficiary') {
             router.replace('/(tabs)/beneficiary-home' as any);
+          } else if (response.data.user.role === 'donor') {
+            router.replace('/(tabs)/donor-home' as any);
           } else {
             // Admin or donor roles go to default home
             router.replace('/(tabs)/home' as any);

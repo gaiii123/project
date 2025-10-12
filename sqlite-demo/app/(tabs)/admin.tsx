@@ -1,8 +1,8 @@
 // app/(tabs)/admin.tsx
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useState, useEffect } from "react";
-import { apiService } from "../services/api";
-import { Project } from "../services/types";
+import { apiService } from '../../services/api';
+import { Project } from '../../services/types';
 import LoadingSpinner from "../../components/loadingSpinner";
 import ErrorMessage from "../../components/errorMessage";
 import CreateProjectModal from "../../components/CreateProjectModal";

@@ -48,12 +48,25 @@ const getProjectById = (req, res) => {
 
 // Create new project
 const createProject = (req, res) => {
-  const { name, description, target_amount } = req.body;
+  const { 
+    name, 
+    title, 
+    description, 
+    category, 
+    target_amount, 
+    location, 
+    image_url, 
+    start_date, 
+    end_date 
+  } = req.body;
 
-  if (!name || !description || !target_amount) {
+  // Support both 'name' and 'title' for backwards compatibility
+  const projectTitle = title || name;
+
+  if (!projectTitle || !description || !target_amount) {
     return res.status(400).json({
       success: false,
-      message: 'Name, description, and target amount are required'
+      message: 'Title/name, description, and target amount are required'
     });
   }
 
@@ -65,9 +78,15 @@ const createProject = (req, res) => {
   }
 
   const projectData = {
-    name,
+    title: projectTitle,
     description,
-    target_amount: parseFloat(target_amount)
+    category: category || 'General',
+    target_amount: parseFloat(target_amount),
+    location: location || null,
+    image_url: image_url || null,
+    start_date: start_date || null,
+    end_date: end_date || null,
+    created_by: req.user?.id || 1 // Use authenticated user or default to admin (1)
   };
 
   Project.create(projectData, (err, result) => {
@@ -136,12 +155,15 @@ const getProjectProgress = (req, res) => {
 // Update project
 const updateProject = (req, res) => {
   const { id } = req.params;
-  const { name, description, target_amount } = req.body;
+  const { name, title, description, category, target_amount, location, image_url } = req.body;
 
-  if (!name || !description || !target_amount) {
+  // Support both 'name' and 'title' for backwards compatibility
+  const projectTitle = title || name;
+
+  if (!projectTitle || !description || !target_amount) {
     return res.status(400).json({
       success: false,
-      message: 'Name, description, and target amount are required'
+      message: 'Title/name, description, and target amount are required'
     });
   }
 
@@ -153,9 +175,12 @@ const updateProject = (req, res) => {
   }
 
   const projectData = {
-    name,
+    title: projectTitle,
     description,
-    target_amount: parseFloat(target_amount)
+    category: category || 'General',
+    target_amount: parseFloat(target_amount),
+    location: location || null,
+    image_url: image_url || null
   };
 
   Project.update(id, projectData, (err) => {
@@ -196,6 +221,27 @@ const deleteProject = (req, res) => {
   });
 };
 
+// Get trending projects (highest goal/target amount)
+const getTrendingProjects = (req, res) => {
+  const limit = parseInt(req.query.limit) || 5; // Default to 5 trending projects
+
+  Project.findTrending(limit, (err, projects) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error fetching trending projects',
+        error: err.message
+      });
+    }
+
+    res.json({
+      success: true,
+      data: projects || [],
+      count: projects?.length || 0
+    });
+  });
+};
+
 module.exports = {
   getAllProjects,
   getProjectById,
@@ -203,5 +249,6 @@ module.exports = {
   updateProjectProgress,
   getProjectProgress,
   updateProject,
-  deleteProject
+  deleteProject,
+  getTrendingProjects
 };

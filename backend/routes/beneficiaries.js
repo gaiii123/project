@@ -8,11 +8,19 @@ const {
   getBeneficiaryById,
   createBeneficiary,
   updateBeneficiaryStatus,
-  deleteBeneficiary
+  deleteBeneficiary,
+  getBeneficiariesByEmail,
+  getBeneficiaryDashboard
 } = require('../controllers/BeneficiaryController');
 
 // GET /api/beneficiaries - Get all beneficiaries
 router.get('/', getAllBeneficiaries);
+
+// GET /api/beneficiaries/email/:email - Get beneficiaries by email
+router.get('/email/:email', getBeneficiariesByEmail);
+
+// GET /api/beneficiaries/dashboard/:email - Get dashboard data for beneficiary
+router.get('/dashboard/:email', getBeneficiaryDashboard);
 
 // GET /api/beneficiaries/:id - Get beneficiary by ID
 router.get('/:id', getBeneficiaryById);

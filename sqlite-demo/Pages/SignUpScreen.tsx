@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { apiService } from '../app/services/api';
+import { apiService } from '../services/api';
 import Toast from 'react-native-toast-message';
 
 export default function SignUpScreen() {

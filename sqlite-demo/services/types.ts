@@ -11,16 +11,49 @@ export interface Beneficiary {
   updated_at: string;
 }
 
+export interface Application {
+  id: number;
+  project_id: number;
+  beneficiary_id: number;
+  application_type: string;
+  description: string;
+  amount_requested?: number;
+  items_requested?: string;
+  reason?: string;
+  voice_recording_url?: string;
+  documents?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'under_review';
+  reviewed_by?: number;
+  review_notes?: string;
+  reviewed_at?: string;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  beneficiary_name?: string;
+  beneficiary_email?: string;
+  beneficiary_phone?: string;
+  beneficiary_location?: string;
+  project_title?: string;
+  project_description?: string;
+  project_category?: string;
+  reviewed_by_name?: string;
+}
+
 export interface Donation {
   id: number;
-  donor_name: string;
-  donor_email: string;
+  project_id: number;
+  donor_id: number;
   amount: number;
   currency: string;
   purpose?: string;
   status: 'pending' | 'completed' | 'failed';
   created_at: string;
   updated_at: string;
+  // Joined fields
+  donor_name?: string;
+  donor_email?: string;
+  project_title?: string;
+  project_category?: string;
 }
 
 export interface Project {
@@ -84,6 +117,32 @@ export interface BeneficiaryDashboardData {
     rejected: number;
     total: number;
   };
+}
+
+export interface DonorImpactStats {
+  projects_supported: number;
+  total_donated: number;
+  avg_donation: number;
+  beneficiaries_impacted: number;
+  impact_records_count: number;
+}
+
+export interface DonorImpactHistory {
+  donation_id: number;
+  amount: number;
+  donation_date: string;
+  status: string;
+  project_title: string;
+  project_category: string;
+  impact_description?: string;
+  status_update?: string;
+  amount_used?: number;
+  impact_date?: string;
+}
+
+export interface DonorImpactData {
+  stats: DonorImpactStats;
+  history: DonorImpactHistory[];
 }
 
 export interface ApiResponse<T> {
